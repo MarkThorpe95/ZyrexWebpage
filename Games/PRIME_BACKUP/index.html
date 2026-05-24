@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zyrex's OSRS Fan Game V4.5 - Skills and Slayer Update</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body>
+  <div id="main-menu" class="main-menu">
+    <div class="menu-card">
+      <div class="menu-frame">
+        <div class="menu-crest-wrap">
+          <img class="menu-crest" src="https://oldschool.runescape.wiki/images/Attack_icon_(detail).png" alt="Menu Crest" onerror="this.onerror=null;this.src='https://oldschool.runescape.wiki/images/Inventory.png?d4795';" />
+        </div>
+        <h1 class="menu-title">Zyrex's OSRS Fan Game V4.5 <br><u>Skills and Slayer Update</u></h1>
+        <p class="menu-subtitle">Select an adventurer or create a new local save.</p>
+
+        <div class="menu-rule" aria-hidden="true"></div>
+
+        <div id="save-list" class="save-list"></div>
+
+        <section class="new-save-panel" aria-label="Create save">
+          <div class="new-save-heading">Create New Adventurer</div>
+          <form id="new-save-form" class="new-save-form">
+            <input id="new-save-name" type="text" maxlength="24" placeholder="Enter character name" autocomplete="off" />
+            <button type="submit" id="create-save-btn">Create Save</button>
+          </form>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div id="game-container" class="game-container" style="display:none;">
+
+    <!-- Title + Total Level -->
+    <header class="game-header">
+      <div class="game-header-row" style="display: flex; align-items: center; justify-content: center; gap: 18px;">
+        <h1 class="game-title">Zyrex's OSRS Fan Game V3.0 <br><u>Duel arena update!</u></h1>
+        <div id="current-skill-box" class="current-skill-box"></div>
+      </div>
+      <div id="player-summary" class="player-summary">
+        Total level: <span id="total-level">0</span>
+      </div>
+    </header>
+
+    <!-- Tabs -->
+    <nav id="tab-bar" class="tab-bar">
+      <button id="dev-login-toggle" class="dev-toggle-btn" type="button" title="Developer Login" aria-label="Developer Login">
+        <img class="tab-icon" src="https://oldschool.runescape.wiki/images/Wrench.png" alt="Dev" />
+      </button>
+
+      <!-- Skills tab (no icon) -->
+      <button class="tab-btn active" data-tab="skills">
+        <img class="tab-icon" alt="Skills" />
+        <span class="tab-label">Skills</span>
+      </button>
+
+      <!-- Inventory tab (icon set dynamically by ui.js) -->
+      <button class="tab-btn" data-tab="inventory">
+        <img class="tab-icon" alt="Inventory" />
+        <span class="tab-label">Inventory</span>
+      </button>
+
+      <!-- Equipment tab (icon set dynamically by ui.js) -->
+      <button class="tab-btn" data-tab="equipment">
+        <img class="tab-icon" alt="Equipment" />
+        <span class="tab-label">Equipment</span>
+      </button>
+
+      <!-- Zones tab (uses Combat icon) -->
+      <button class="tab-btn" data-tab="zones">
+        <img class="tab-icon"
+             src="https://oldschool.runescape.wiki/images/Attack_icon_(detail).png"
+             alt="Zones"
+             onerror="this.src='https://oldschool.runescape.wiki/images/Combat_icon.png'" />
+        <span class="tab-label">Zones</span>
+      </button>
+
+      <!-- Combat tab -->
+      <button class="tab-btn" data-tab="combat" title="Combat Training">
+        <img class="tab-icon"
+             src="https://oldschool.runescape.wiki/images/Attack_icon_(detail).png"
+             alt="Combat"
+             onerror="this.src='https://oldschool.runescape.wiki/images/Combat_icon.png'" />
+        <span class="tab-label">Combat</span>
+      </button>
+
+      <!-- Duel Arena tab -->
+      <button class="tab-btn" data-tab="duel-arena" title="Duel Arena">
+        <img class="tab-icon"
+             src="https://oldschool.runescape.wiki/images/Duel_Arena.png"
+             alt="Duel Arena"
+             onerror="this.src='https://oldschool.runescape.wiki/images/thumb/Coins_10000.png/32px-Coins_10000.png'" />
+        <span class="tab-label">Duel Arena</span>
+      </button>
+      <!-- Shop tab -->
+      <button class="tab-btn" data-tab="shop" title="Shop">
+        <img class="tab-icon"
+             src="https://oldschool.runescape.wiki/images/Shop_icon.png"
+             alt="Shop"
+             onerror="this.src='https://oldschool.runescape.wiki/images/Coins_10000.png'" />
+        <span class="tab-label">Shop</span>
+      </button>
+    </nav>
+
+    <!-- Main Panel Container -->
+    <main class="panel-container main-layout">
+
+      <!-- Skills Panel -->
+      <section class="panel skills-panel" data-panel="skills">
+        <h2>Skills</h2>
+        <div id="skills-grid" class="skills-grid"></div>
+      </section>
+
+      <!-- Inventory Panel -->
+      <section class="panel inventory-panel" data-panel="inventory" style="display:none;">
+        <h2>Inventory</h2>
+        <div id="inventory-grid" class="inventory-grid"></div>
+      </section>
+
+      <!-- Equipment Panel -->
+      <section class="panel equipment-panel" data-panel="equipment" style="display:none;">
+        <h2>Equipment</h2>
+        <div class="equipment-layout-row">
+          <div id="equipment-grid" class="equipment-grid-labeled">
+            <div class="equip-slot-wrap"><div class="equip-slot equip-cape" data-slot="cape"></div><div class="equip-label">Cape</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-head" data-slot="head"></div><div class="equip-label">Head</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-neck" data-slot="neck"></div><div class="equip-label">Neck</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-weapon" data-slot="weapon"></div><div class="equip-label">Weapon</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-body" data-slot="body"></div><div class="equip-label">Body</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-shield" data-slot="shield"></div><div class="equip-label">Shield</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-legs" data-slot="legs"></div><div class="equip-label">Legs</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-hands" data-slot="hands"></div><div class="equip-label">Hands</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-feet" data-slot="feet"></div><div class="equip-label">Feet</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-ring" data-slot="ring"></div><div class="equip-label">Ring</div></div>
+            <div class="equip-slot-wrap"><div class="equip-slot equip-ammo" data-slot="ammo"></div><div class="equip-label">Ammo</div></div>
+          </div>
+          <div class="equipment-stats-box">
+            <h3>Bonuses</h3>
+            <div id="equipment-stats-display"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Shop Panel -->
+      <section class="panel shop-panel" data-panel="shop" style="display:none;">
+        <h2>Shop</h2>
+        <div id="shop-grid" class="shop-grid"></div>
+        <div id="shop-tooltip" class="shop-tooltip" style="display:none;"></div>
+      </section>
+
+      <!-- Stats Panel removed: stats now shown in equipment tab -->
+
+      <!-- Zones Panel -->
+      <!-- Zones panel is created by the zones mod during initialization -->
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="game-footer">
+      <span class="credits">
+        Icons from the Old School RuneScape Wiki, used under CC-BY-SA 3.0.
+      </span>
+    </footer>
+
+  </div>
+
+  <div id="dev-login-modal" class="dev-login-modal" style="display:none;">
+    <div class="dev-login-card">
+      <div class="dev-login-title">Old School RuneScape</div>
+      <div class="dev-login-subtitle">Developer Login</div>
+
+      <form id="dev-login-form" class="dev-login-form">
+        <label for="dev-username">Username</label>
+        <input id="dev-username" type="text" maxlength="24" autocomplete="off" />
+
+        <label for="dev-password">Password</label>
+        <input id="dev-password" type="password" maxlength="24" autocomplete="off" />
+
+        <div id="dev-login-status" class="dev-login-status"></div>
+
+        <div class="dev-login-actions">
+          <button id="dev-login-submit" type="submit">Login</button>
+          <button id="dev-login-cancel" type="button">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <aside id="dev-menu" class="dev-menu" style="display:none;">
+    <h3>Developer Menu</h3>
+    <div class="dev-speed-controls">
+      <label for="dev-speed-select">Game Speed</label>
+      <div class="dev-speed-row">
+        <select id="dev-speed-select">
+          <option value="1">1x</option>
+          <option value="2">2x</option>
+          <option value="5">5x</option>
+          <option value="10">10x</option>
+          <option value="50">50x</option>
+          <option value="100">100x</option>
+          <option value="1000">1000x</option>
+        </select>
+        <button id="dev-speed-apply" type="button">Apply</button>
+      </div>
+    </div>
+    <div class="dev-stack-controls">
+      <label for="dev-stack-toggle">Inventory Stacking</label>
+      <div class="dev-stack-row">
+        <label class="dev-stack-toggle-label" for="dev-stack-toggle">
+          <input id="dev-stack-toggle" type="checkbox" />
+          <span>Stack every item</span>
+        </label>
+        <button id="dev-stack-apply" type="button">Apply</button>
+      </div>
+    </div>
+    <div class="dev-stack-controls">
+      <label for="dev-win-duels-toggle">Duel Outcome</label>
+      <div class="dev-stack-row">
+        <label class="dev-stack-toggle-label" for="dev-win-duels-toggle">
+          <input id="dev-win-duels-toggle" type="checkbox" />
+          <span>Win every duel</span>
+        </label>
+        <button id="dev-win-duels-apply" type="button">Apply</button>
+      </div>
+    </div>
+    <div class="dev-stack-controls">
+      <label for="dev-fun-mode-toggle">INSTA DP</label>
+      <div class="dev-stack-row">
+        <label class="dev-stack-toggle-label" for="dev-fun-mode-toggle">
+          <input id="dev-fun-mode-toggle" type="checkbox" />
+          <span>Enable INSTA DP</span>
+        </label>
+        <button id="dev-fun-mode-apply" type="button">Apply</button>
+      </div>
+    </div>
+    <div class="dev-stack-controls">
+      <label for="dev-rare-party-toggle">Force Rare+ Drop Party</label>
+      <div class="dev-stack-row">
+        <label class="dev-stack-toggle-label" for="dev-rare-party-toggle">
+          <input id="dev-rare-party-toggle" type="checkbox" />
+          <span>Always rare+ with guaranteed rare</span>
+        </label>
+        <button id="dev-rare-party-apply" type="button">Apply</button>
+      </div>
+    </div>
+    <div class="dev-stack-controls">
+      <label for="dev-auto-skill-prog-toggle">Auto skill progression</label>
+      <div class="dev-stack-row">
+        <label class="dev-stack-toggle-label" for="dev-auto-skill-prog-toggle">
+          <input id="dev-auto-skill-prog-toggle" type="checkbox" />
+          <span>Automatically switch to highest unlocked spot when leveling up</span>
+        </label>
+        <button id="dev-auto-skill-prog-apply" type="button">Apply</button>
+      </div>
+    </div>
+    <div class="dev-menu-grid">
+      <button type="button" data-dev-action="addCoins">Add 100M Coins</button>
+      <button type="button" data-dev-action="addPlatinum">Add 100M Platinum Tokens</button>
+      <button type="button" data-dev-action="addCasketSet">Add Casket Set</button>
+      <button type="button" data-dev-action="spawnHsr">Spawn HSR Item</button>
+      <button type="button" data-dev-action="levelAll">+1 All Skills</button>
+      <button type="button" data-dev-action="maxAll">Max All Skills (99)</button>
+      <button type="button" data-dev-action="clearInv">Clear Inventory</button>
+      <button type="button" data-dev-action="saveNow">Save Now</button>
+      <button type="button" data-dev-action="lockDev">Lock Dev Menu</button>
+    </div>
+    <div id="dev-menu-status" class="dev-menu-status"></div>
+  </aside>
+
+  <!-- Core systems -->
+  <script src="js/core/mod_system.js"></script>
+  <script src="js/core/event_system.js"></script>
+  <script src="js/core/skill_class.js"></script>
+  <script src="js/core/skills.js"></script>
+  <script src="js/core/inventory.js"></script>
+  <script src="js/core/equipment.js"></script>
+  <script src="js/core/player.js"></script>
+  <script src="js/core/ui.js"></script>
+  <script src="js/core/game.js"></script>
+
+  <!-- Level 99 Notification Area -->
+  <div id="level99-notification" style="display:none;position:fixed;left:50%;bottom:80px;transform:translateX(-50%);background:rgba(0,0,0,0.92);color:#fff;padding:18px 40px;border-radius:12px;font-size:22px;z-index:10000;box-shadow:0 4px 24px #000a;cursor:pointer;text-align:center;user-select:none;"></div>
+</body>
+</html>

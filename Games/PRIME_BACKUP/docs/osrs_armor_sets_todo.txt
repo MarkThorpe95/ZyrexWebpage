@@ -1,0 +1,33 @@
+# OSRS Armor Sets To Add
+
+- Bronze armour set (lg/sk)
+- Iron armour set (lg/sk)
+- Steel armour set (lg/sk)
+- Black armour set (lg/sk)
+- Mithril armour set (lg/sk)
+- Adamant armour set (lg/sk)
+- Rune armour set (lg/sk)
+- Gilded armour set (lg/sk)
+- Dragon armour set (lg/sk)
+- Initiate armour set
+- Proselyte armour set
+- Granite armour set
+- Bandos armour set
+- Armadyl armour set
+- Ancient armour set
+- Zamorak armour set
+- Saradomin armour set
+- Guthix armour set
+- Justiciar armour set
+- Inquisitor's armour set
+- Torva armour set
+- Crystal armour set
+- Void knight set (melee/range/mage/elite)
+- Barrows sets (Ahrim, Dharok, Guthan, Karil, Torag, Verac)
+- Third age armour set
+- Blessed d'hide sets (Saradomin, Guthix, Zamorak, Armadyl, Ancient, Bandos)
+- Other special/trimmed sets (e.g., trimmed, gold-trimmed, etc.)
+
+# For each set, add to ARMOR_SET_DEFS in js/mods/04_systems/08_bank.js with correct id, name, icon, aliases, components, and componentNames.
+
+# Reference: https://oldschool.runescape.wiki/w/Armour_set

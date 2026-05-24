@@ -1,0 +1,41 @@
+Remaining feature ideas
+
+1. Add fletching recipes. Knife on logs in inventory should open a recipe menu with skill requirements and material requirements. Bowstring can stay G.E-only for now.
+2. Add skilling clue scroll chances with one-click casket conversion and one-click casket opening using OSRS-style loot chances. Clue items and caskets should appear in the collection log.
+3. Add a simplified smithing menu as another skilling tab, using a Melvor-style recipe panel with OSRS recipe data.
+4. Add firemaking with a Melvor-style burn panel using the OSRS log ladder already in game.
+5. Add farming patches with fast growth cycles. Limit progression through seeds, and let seeds be obtainable or bought from the G.E.
+6. Make mining fully functional using the existing gathering layout, ore list, and level ladder already shown in the UI.
+7. Make fishing fully functional using the existing gathering layout, fish list, and tool support already shown in the UI.
+8. Add cooking as a simple inventory-driven skill that converts raw fish into cooked food. Burn chances can come later.
+9. Expand the new combat tab with more bosses, monster-specific drops, food usage, and proper death/respawn flows.
+10. Upgrade the staking view with item-vs-item offers, whip-style presets, and overflow-to-bank reward handling for non-stackable winnings.
+11. Add a bank search box and quantity presets like 1, 5, 10, X, and All.
+12. Upgrade the G.E with offer history and completed-offer collection buttons so it feels closer to the live game flow.
+13. Add a shared item definition registry so starter items, gathering rewards, bank catalog entries, combat rewards, and G.E data all use one source of truth.
+
+Verified untrainable skills right now
+
+Ranged
+Prayer
+Magic
+Runecraft
+Construction
+Agility
+Herblore
+Thieving
+Crafting
+Fletching
+Slayer
+Hunter
+Mining
+Smithing
+Fishing
+Cooking
+Firemaking
+Farming
+
+
+Notes~~~
+Fix G.e not reading inventory quantity
+Duel arena is broke.

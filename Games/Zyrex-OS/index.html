@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Zyrex OS</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="scanlines">
+
+  <!-- Boot overlay -->
+  <div id="bootOverlay" class="boot-overlay">
+    <div class="boot-window">
+      <div class="boot-title">ZYREX CORE BOOTSTRAP</div>
+      <div class="boot-log" id="bootLog"></div>
+      <div class="boot-progress">
+        <div class="boot-progress-bar" id="bootProgressBar"></div>
+      </div>
+      <div class="boot-hint" id="bootHint">Spinning up Zyrex nodes...</div>
+    </div>
+  </div>
+
+  <!-- Background layers -->
+  <div class="noise"></div>
+  <div class="shadow-entity"></div>
+  <div class="shadow-entity"></div>
+  <div class="shadow-entity"></div>
+
+  <!-- Desktop -->
+  <div id="desktop" class="desktop">
+
+    <!-- Desktop icons -->
+    <div class="desktop-icons">
+      <div class="desktop-icon" data-app="checklist">
+        <div class="icon-glyph icon-checklist"></div>
+        <div class="icon-label">Zyrex Todo Matrix</div>
+      </div>
+      <div class="desktop-icon" data-app="log">
+        <div class="icon-glyph icon-log"></div>
+        <div class="icon-label">Zyrex System Log</div>
+      </div>
+      <div class="desktop-icon" data-app="status">
+        <div class="icon-glyph icon-status"></div>
+        <div class="icon-label">Zyrex Status Panel</div>
+      </div>
+      <div class="desktop-icon" data-app="notes">
+        <div class="icon-glyph icon-notes"></div>
+        <div class="icon-label">Zyrex Notes</div>
+      </div>
+      <div class="desktop-icon" data-app="calculator">
+        <div class="icon-glyph icon-calculator"></div>
+        <div class="icon-label">Zyrex Calculator</div>
+      </div>
+    </div>
+
+    <!-- Checklist App -->
+    <div class="window window-checklist app-window" data-app="checklist">
+      <div class="window-header">
+        <div class="window-title">ZYREX TODO MATRIX</div>
+        <div class="window-controls">
+          <span class="dot red" data-action="close"></span>
+          <span class="dot yellow" data-action="minimize"></span>
+          <span class="dot green" data-action="focus"></span>
+        </div>
+      </div>
+      <div class="window-body">
+        <div class="container" id="appContainer">
+          <div class="header">
+            <div class="title-block">
+              <h1>ZYREX TODO MATRIX</h1>
+              <div class="subtitle">/home/zyrex/ops/checklist</div>
+            </div>
+            <div class="status-pill" id="statusPill">SESSION LIVE</div>
+          </div>
+
+          <div class="glitch-bar"></div>
+
+          <div class="input-row">
+            <input id="taskInput" type="text" autocomplete="off" placeholder="New objective..." />
+            <button class="btn" id="addBtn">+ Inject</button>
+          </div>
+
+          <div class="meta-row">
+            <span><span class="meta-dot"></span> ACTIVE NODES: <span id="countActive">0</span></span>
+            <span>COMPLETED: <span id="countCompleted">0</span></span>
+            <button class="btn clear-btn" id="clearAllBtn">Purge All</button>
+          </div>
+
+          <ul id="taskList"></ul>
+
+          <div class="footer">
+            <span>Enter = inject</span>
+            <span>Theme: <strong>ZYREX / HACKER / METAL / 420</strong></span>
+          </div>
+        </div>
+      </div>
+      <div class="resize-handle"></div>
+    </div>
+
+    <!-- System Log App -->
+    <div class="window window-log app-window" data-app="log">
+      <div class="window-header">
+        <div class="window-title">ZYREX SYSTEM LOG</div>
+        <div class="window-controls">
+          <span class="dot red" data-action="close"></span>
+          <span class="dot yellow" data-action="minimize"></span>
+          <span class="dot green" data-action="focus"></span>
+        </div>
+      </div>
+      <div class="window-body window-body-log">
+        <div class="terminal-log" id="systemLog">
+          <div class="log-line">[LOG] Zyrex OS shell initialized.</div>
+        </div>
+      </div>
+      <div class="resize-handle"></div>
+    </div>
+
+    <!-- Status App -->
+    <div class="window window-status app-window" data-app="status">
+      <div class="window-header">
+        <div class="window-title">ZYREX STATUS PANEL</div>
+        <div class="window-controls">
+          <span class="dot red" data-action="close"></span>
+          <span class="dot yellow" data-action="minimize"></span>
+          <span class="dot green" data-action="focus"></span>
+        </div>
+      </div>
+      <div class="window-body window-body-status">
+        <div class="status-grid">
+          <div class="status-card"><div class="status-label">ZYREX LINK</div><div class="status-value online">ONLINE</div></div>
+          <div class="status-card"><div class="status-label">CHECKLIST NODES</div><div class="status-value" id="statusNodes">0</div></div>
+          <div class="status-card"><div class="status-label">COMPLETED RUNS</div><div class="status-value" id="statusCompleted">0</div></div>
+          <div class="status-card"><div class="status-label">VIBE LEVEL</div><div class="status-value">420%</div></div>
+        </div>
+      </div>
+      <div class="resize-handle"></div>
+    </div>
+
+    <!-- Context Menus -->
+    <div id="desktopContextMenu" class="context-menu hidden">
+      <div class="context-item" data-action="new-note">New Note</div>
+      <div class="context-item" data-action="refresh">Refresh</div>
+      <div class="context-item" data-action="arrange">Arrange Icons</div>
+      <div class="context-sep"></div>
+      <div class="context-item" data-action="open-notes">Open Notes</div>
+    </div>
+
+    <div id="windowContextMenu" class="context-menu hidden">
+      <div class="context-item" data-action="focus">Bring to Front</div>
+      <div class="context-item" data-action="minimize">Minimize</div>
+      <div class="context-item" data-action="close">Close</div>
+      <div class="context-item" data-action="toggle-max">Maximize/Restore</div>
+      <div class="context-sep"></div>
+      <div class="context-item" data-action="properties">Properties</div>
+    </div>
+
+    <!-- Notes App -->
+    <div class="window window-notes app-window" data-app="notes">
+      <div class="window-header">
+        <div class="window-title">ZYREX NOTE PAD</div>
+        <div class="window-controls">
+          <span class="dot red" data-action="close"></span>
+          <span class="dot yellow" data-action="minimize"></span>
+          <span class="dot green" data-action="focus"></span>
+        </div>
+      </div>
+      <div class="window-body">
+        <div class="notes-toolbar">
+          <span class="notes-label">~/notes.txt</span>
+          <div class="notes-actions">
+            <button class="btn" id="saveNotesBtn">Save</button>
+            <button class="btn clear-btn" id="clearNotesBtn">Clear</button>
+          </div>
+        </div>
+        <textarea id="notesContent" placeholder="Type your notes here..."></textarea>
+      </div>
+      <div class="resize-handle"></div>
+    </div>
+
+    <!-- Calculator App -->
+    <div class="window window-calculator app-window" data-app="calculator">
+      <div class="window-header">
+        <div class="window-title">ZYREX CALCULATOR</div>
+        <div class="window-controls">
+          <span class="dot red" data-action="close"></span>
+          <span class="dot yellow" data-action="minimize"></span>
+          <span class="dot green" data-action="focus"></span>
+        </div>
+      </div>
+      <div class="window-body">
+        <div class="calc-display" id="calcDisplay">0</div>
+        <div class="calc-grid">
+          <button class="calc-btn" data-value="7">7</button>
+          <button class="calc-btn" data-value="8">8</button>
+          <button class="calc-btn" data-value="9">9</button>
+          <button class="calc-btn operator" data-value="/">÷</button>
+          <button class="calc-btn" data-value="4">4</button>
+          <button class="calc-btn" data-value="5">5</button>
+          <button class="calc-btn" data-value="6">6</button>
+          <button class="calc-btn operator" data-value="*">×</button>
+          <button class="calc-btn" data-value="1">1</button>
+          <button class="calc-btn" data-value="2">2</button>
+          <button class="calc-btn" data-value="3">3</button>
+          <button class="calc-btn operator" data-value="-">−</button>
+          <button class="calc-btn" data-value="0">0</button>
+          <button class="calc-btn" data-value=".">.</button>
+          <button class="calc-btn clear-btn" data-value="C">C</button>
+          <button class="calc-btn operator" data-value="+">+</button>
+          <button class="calc-btn equals" data-value="=">=</button>
+        </div>
+      </div>
+      <div class="resize-handle"></div>
+    </div>
+
+    <!-- Taskbar -->
+    <div class="taskbar">
+      <div class="taskbar-left">
+        <div class="taskbar-logo">ZYREX</div>
+        <div class="taskbar-apps" id="taskbarApps"></div>
+      </div>
+      <div class="taskbar-right">
+        <div class="taskbar-clock" id="taskbarClock"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

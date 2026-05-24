@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zyrex | Hacker Games</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0a0a0a;
+      color: #f00;
+      font-family: 'Share Tech Mono', monospace;
+      overflow-x: hidden;
+    }
+    .matrix {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.18;
+    }
+    header {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      padding: 4rem 1rem 2rem 1rem;
+    }
+    .brand {
+      font-size: 3rem;
+      letter-spacing: 0.2em;
+      color: #f00;
+      text-shadow: 0 0 12px #f00, 0 0 32px #fff2;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .subtitle {
+      font-size: 1.3rem;
+      color: #fff;
+      text-shadow: 0 0 8px #f00a;
+      margin-bottom: 2rem;
+    }
+    main {
+      position: relative;
+      z-index: 2;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1rem 4rem 1rem;
+    }
+    .games {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 2rem;
+    }
+    .game {
+      background: linear-gradient(135deg, #181818 80%, #f00 120%);
+      border: 2px solid #f00;
+      border-radius: 12px;
+      box-shadow: 0 0 16px #f002, 0 0 2px #fff2;
+      padding: 1.5rem 1rem;
+      text-align: center;
+      transition: transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .game:hover {
+      transform: scale(1.04);
+      box-shadow: 0 0 32px #f00a, 0 0 8px #fff4;
+      border-color: #fff;
+    }
+    .game-title {
+      font-size: 1.4rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 8px #f00a;
+    }
+    .game-desc {
+      color: #f88;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+    .game-link {
+      display: inline-block;
+      color: #fff;
+      background: #f00;
+      padding: 0.5em 1.2em;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      box-shadow: 0 0 8px #f00a;
+      transition: background 0.2s, color 0.2s;
+    }
+    .game-link:hover {
+      background: #fff;
+      color: #f00;
+    }
+    @media (max-width: 600px) {
+      .brand { font-size: 2rem; }
+      .subtitle { font-size: 1rem; }
+      .games { gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <canvas class="matrix"></canvas>
+  <header>
+    <div class="brand">Zyrex</div>
+    <div class="subtitle"><p>~Mark T-S~</p>Games im working on so far</div>
+  </header>
+  <main>
+    <section class="games">
+      <div class="game">
+        <div class="game-title">OSRS Fan Game</div>
+        <div class="game-desc">A browser-based fan game inspired by Old School RuneScape.</div>
+          <a class="game-link" href="Games/PRIME_BACKUP/index.html" target="_blank" rel="noopener">Play Now</a>
+      </div>
+      <div class="game">
+        <div class="game-title">K-Pop Demon Hunters</div>
+        <div class="game-desc">A Game im working on passivly for my fiance'</div>
+          <a class="game-link" href="Games/Kpop Game/index.html" target="_blank" rel="noopener">Play Now</a>
+      </div>
+            <div class="game">
+        <div class="game-title">Zyrex-OS</div>
+        <div class="game-desc">I got bored.</div>
+          <a class="game-link" href="Games/Zyrex-OS/index.html" target="_blank" rel="noopener">Play Now</a>
+      </div>
+      <!-- Add more games here -->
+    </section>
+  </main>
+  <script>
+    // Matrix effect
+    const canvas = document.querySelector('.matrix');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    let fontSize = 18;
+    let columns = Math.floor(width / fontSize);
+    let drops = Array(columns).fill(1);
+    function drawMatrix() {
+      ctx.fillStyle = 'rgba(10,10,10,0.7)';
+      ctx.fillRect(0, 0, width, height);
+      ctx.font = fontSize + "px 'Share Tech Mono', monospace";
+      for (let i = 0; i < columns; i++) {
+        let text = String.fromCharCode(0x30A0 + Math.random() * 96);
+        ctx.fillStyle = Math.random() > 0.9 ? '#fff' : '#f00';
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        if (drops[i] * fontSize > height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        drops[i]++;
+      }
+    }
+    setInterval(drawMatrix, 50);
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      columns = Math.floor(width / fontSize);
+      drops = Array(columns).fill(1);
+    });
+  </script>
+</body>
+</html>

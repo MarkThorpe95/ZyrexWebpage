@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neon K‑Pop Demon Hunters</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="theme-dark">
+
+<div id="game-container">
+
+    <!-- CHARACTER SELECT -->
+    <div id="character-select">
+        <h1 class="game-title">Neon K‑Pop Demon Hunters</h1>
+        <p>Select your Hunter</p>
+
+        <div id="character-list">
+            <div class="character-card" data-char="mira">
+                <img class="character-portrait" src="https://static.wikia.nocookie.net/kpop-demon-hunters/images/9/90/Mira_Portrait.png">
+                <div class="character-name">Mira</div>
+            </div>
+
+            <div class="character-card" data-char="zoey">
+                <img class="character-portrait" src="https://static.wikia.nocookie.net/kpop-demon-hunters/images/9/98/Zoey_Portrait.png">
+                <div class="character-name">Zoey</div>
+            </div>
+
+            <div class="character-card" data-char="rumi">
+                <img class="character-portrait" src="https://static.wikia.nocookie.net/kpop-demon-hunters/images/3/31/Rumi_Portrait.png">
+                <div class="character-name">Rumi</div>
+            </div>
+        </div>
+
+        <div id="character-message-box" class="hidden">
+            <div id="character-message-text"></div>
+        </div>
+
+        <div id="profile-management" class="profile-controls">
+            <label>Profile:
+                <select id="profile-select">
+                    <option value="">Select profile</option>
+                </select>
+            </label>
+            <input id="profile-name-input" type="text" placeholder="New save name">
+            <button id="create-profile-btn">Create & Start</button>
+            <button id="delete-profile-btn">Delete</button>
+        </div>
+        <div id="save-load-controls" style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button id="save-btn" class="kpop-action-btn">Save</button>
+            <button id="load-btn" class="kpop-action-btn">Load</button>
+            <button id="reset-save-btn" class="kpop-action-btn danger">Reset Save</button>
+        </div>
+    </div>
+
+    <!-- MAIN UI -->
+    <div id="main-ui" class="hidden">
+
+        <div id="top-bar">
+
+            <!-- PLAYER INFO -->
+            <div id="player-info">
+                <div id="player-portrait-wrap">
+                    <img id="player-portrait" src="">
+                </div>
+
+                <div style="flex:1;">
+                    <div id="xp-bar-wrap"><div id="xp-bar"></div></div>
+                    <div id="xp-text"></div>
+
+                    <div id="player-stats">
+                        <div>Name: <span id="player-name"></span></div>
+                        <div>Level: <span id="player-level"></span></div>
+                        <div>HP: <span id="player-hp"></span> / <span id="player-maxhp"></span></div>
+                        <div>Souls: <span id="player-souls"></span></div>
+                        <div>Prestige: <span id="player-prestige"></span></div>
+                        <div>Prestige Bonus: <span id="player-prestige-bonus"></span>%</div>
+                        <div>Derpy Fur: <span id="player-derpyfur"></span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- WEAPON INFO -->
+            <div id="weapon-info">
+                <div>Weapon Level: <span id="weapon-level"></span></div>
+                <div>Weapon Prestige: <span id="weapon-prestige"></span></div>
+                <div>Passives: <span id="weapon-passives"></span></div>
+                <button id="upgrade-weapon-btn">Upgrade Weapon</button>
+            </div>
+
+            <div id="weapon-upgrade-modal" class="modal hidden">
+                <div class="modal-content">
+                    <button id="weapon-upgrade-close" class="modal-close">&times;</button>
+                    <div class="weapon-upgrade-header">
+                        <div id="weapon-splash" class="weapon-splash"></div>
+                        <div class="weapon-upgrade-summary">
+                            <h3 id="weapon-name">Weapon Name</h3>
+                            <p id="weapon-desc">Upgrade your hunter's signature weapon, unlock powerful custom aspects, and spend Souls to empower every attack.</p>
+                            <div class="weapon-upgrade-meta">
+                                <div>Weapon Level: <span id="modal-weapon-level"></span></div>
+                                <div>Souls: <span id="modal-weapon-souls"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="weapon-upgrade-options" class="weapon-upgrade-options"></div>
+                </div>
+            </div>
+
+            <div id="dev-menu-modal" class="dev-menu hidden">
+                <div class="modal-content dev-menu-content" id="dev-menu-panel">
+                    <div id="dev-menu-header" class="dev-menu-header">
+                        <div>Developer Console</div>
+                        <div class="dev-menu-actions">
+                            <button id="dev-collapse-btn" class="dev-collapse-btn" title="Minimize / Expand">Minimize</button>
+                            <button id="dev-menu-close" class="dev-close-btn" title="Close">×</button>
+                        </div>
+                    </div>
+                    <div class="dev-menu-body">
+                        <div class="dev-menu-grid">
+                            <div class="dev-panel">
+                                <h4>Character Stats</h4>
+                                <div class="dev-field-row"><label>Level</label><input id="dev-level" type="number" min="1"></div>
+                                <div class="dev-field-row"><label>XP</label><input id="dev-xp" type="number" min="0"></div>
+                                <div class="dev-field-row"><label>Max HP</label><input id="dev-maxhp" type="number" min="1"></div>
+                                <div class="dev-field-row"><label>Current HP</label><input id="dev-hp" type="number" min="0"></div>
+                                <div class="dev-field-row"><label>Souls</label><input id="dev-souls" type="number" min="0"></div>
+                                <div class="dev-field-row"><label>Prestige</label><input id="dev-prestige" type="number" min="0"></div>
+                                <div class="dev-field-row"><label>Derpy Fur</label><input id="dev-derpyfur" type="number" min="0"></div>
+                                <button id="dev-apply-stats" class="dev-menu-button">Apply Stats</button>
+                            </div>
+                            <div class="dev-panel">
+                                <h4>Inventory</h4>
+                                <div id="dev-inventory-list" class="dev-inventory-list"></div>
+                                <button id="dev-apply-inventory" class="dev-menu-button">Apply Inventory</button>
+                            </div>
+                            <div class="dev-panel">
+                                <h4>Dev Perks</h4>
+                                <label><input id="dev-perk-godmode" type="checkbox"> God Mode</label>
+                                <label><input id="dev-perk-infinite-souls" type="checkbox"> Infinite Souls</label>
+                                <label><input id="dev-perk-max-weapon" type="checkbox"> Max Weapon</label>
+                                <div class="dev-field-row"><label>Bonus Souls</label><input id="dev-bonus-souls" type="number" min="0" value="1000"></div>
+                                <div class="dev-field-row dev-speed-row"><label>Game Speed</label><div class="dev-speed-buttons"><button type="button" class="dev-speed-btn" data-speed="1">1x</button><button type="button" class="dev-speed-btn" data-speed="2">2x</button><button type="button" class="dev-speed-btn" data-speed="5">5x</button><button type="button" class="dev-speed-btn" data-speed="10">10x</button></div></div>
+                                <button id="dev-apply-perks" class="dev-menu-button">Apply Perks</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTROLS -->
+            <div id="controls-info">
+                <div class="profile-current">Profile: <strong id="current-profile-name">None</strong></div>
+                <button id="save-profile-btn">Save Profile</button>
+            </div>
+
+        </div>
+
+        <!-- MAIN PANELS -->
+        <div id="main-panels">
+
+            <!-- COMBAT PANEL -->
+            <div id="combat-panel">
+                <h2>Combat</h2>
+
+                <div id="enemy-info">
+                    <div>Enemy: <span id="enemy-name"></span></div>
+                    <div>Level: <span id="enemy-level"></span></div>
+                    <div>HP: <span id="enemy-hp"></span> / <span id="enemy-maxhp"></span></div>
+                </div>
+
+                <div id="combat-sprites">
+                    <div id="player-sprite" class="combat-sprite player-sprite"></div>
+                    <div id="combat-vs">VS</div>
+                    <div id="enemy-sprite" class="combat-sprite enemy-sprite"></div>
+                </div>
+
+                <div id="combat-actions">
+                    <div style="position:relative;display:flex;align-items:center;gap:8px;width:100%">
+                        <button id="fight-btn" style="flex:1;display:flex;align-items:center;justify-content:center;position:relative;">
+                            Attack
+                            <label class="switch mini-idle" style="margin-left:10px;">
+                                <input type="checkbox" id="idle-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </button>
+                        <button id="heal-btn">Use Item</button>
+                    </div>
+                </div>
+
+                <div id="cooldown-info" class="hidden">
+                    Respawning in <span id="cooldown-timer"></span> seconds...
+                </div>
+
+                <div id="combat-log"></div>
+            </div>
+
+            <!-- SIDE PANEL -->
+            <div id="side-panel">
+
+
+                <div id="tabs">
+                    <button class="tab-btn active" data-tab="zones-tab">Zones</button>
+                    <button class="tab-btn" data-tab="store-tab">Store</button>
+                    <button class="tab-btn" data-tab="cooking-tab">Cooking</button>
+                    <button class="tab-btn" data-tab="storage-tab">Storage</button>
+                    <button class="tab-btn" data-tab="city-tab">City</button>
+                    <button class="tab-btn" data-tab="derpy-tab">Derpy</button>
+                </div>
+                <!-- COOKING TAB -->
+                <div id="cooking-tab" class="tab-content">
+                    <h3>Cooking</h3>
+                    <div id="cooking-recipes"></div>
+                </div>
+
+                <div id="storage-tab" class="tab-content">
+                    <h3>Storage</h3>
+                    <div id="storage-tabs" style="display:flex;gap:8px;margin-bottom:10px;">
+                        <button class="storage-subtab-btn active" data-subtab="storage-cooking">Cooking</button>
+                        <!-- Future: <button class="storage-subtab-btn" data-subtab="storage-gear">Gear</button> -->
+                    </div>
+                    <div id="storage-cooking" class="storage-subtab active">
+                        <div style="margin-bottom:10px;">
+                            <label>Sort by: 
+                                <select id="storage-sort">
+                                    <option value="name">Name</option>
+                                    <option value="amount">Amount</option>
+                                </select>
+                            </label>
+                            <label style="margin-left:12px;">Filter: 
+                                <select id="storage-filter">
+                                    <option value="all">All</option>
+                                    <option value="ingredients">Ingredients</option>
+                                    <option value="cooked">Cooked Food</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div id="storage-inventory"></div>
+                    </div>
+                    <!-- Future: <div id="storage-gear" class="storage-subtab">Gear goes here</div> -->
+                </div>
+
+                <!-- ZONES TAB -->
+                <div id="zones-tab" class="tab-content active">
+                    <h3>Zones</h3>
+
+                    <!-- NEW CLEAN DROPDOWN ZONE LIST -->
+                    <div id="zone-list"></div>
+
+                    <button id="infinite-dungeon-btn">Infinite Dungeon (101+)</button>
+                </div>
+
+                <!-- STORE TAB -->
+                <div id="store-tab" class="tab-content">
+                    <h3>Store</h3>
+
+                    <div class="store-item" data-item="noodle">
+                        <div class="store-name">Noodles</div>
+                        <div class="store-desc">Heals 40% HP</div>
+                        <div class="store-cost">Cost: 50 Souls</div>
+                        <button class="buy-item-btn">Buy</button>
+                    </div>
+
+                    <div class="store-item" data-item="soda">
+                        <div class="store-name">Soda</div>
+                        <div class="store-desc">Heals 40% HP</div>
+                        <div class="store-cost">Cost: 120 Souls</div>
+                        <button class="buy-item-btn">Buy</button>
+                    </div>
+
+                    <div>Healing Items: <span id="healing-items-count"></span></div>
+                </div>
+
+                <!-- CITY TAB -->
+                <div id="city-tab" class="tab-content">
+                    <h3>City Districts</h3>
+                    <div>Districts Cleared: <span id="districts-cleared"></span> / 20</div>
+                    <div id="district-grid"></div>
+                </div>
+
+                <!-- DERPY TAB -->
+                <div id="derpy-tab" class="tab-content">
+                    <h3>Derpy's Shrine</h3>
+                    <img id="derpy-img"
+                         src="https://static.wikia.nocookie.net/kpop-demon-hunters/images/7/73/Derpy_Portrait_temp.png"
+                         alt="Derpy">
+                    <button id="derpy-prestige-btn">Prestige Character</button>
+                    <button id="derpy-weapon-prestige-btn">Prestige Weapon</button>
+                    <div class="derpy-info">
+                        Derpy Fur: <span id="derpyfur-count"></span><br>
+                        Weapon Prestige requires 10 Derpy Fur.<br>
+                        Character Prestige resets level but grants +5% damage.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- JENU OVERLAY -->
+<div id="jenu-avatar">
+    <div class="jenu-glitch-avatar"></div>
+    <div class="jenu-text"></div>
+</div>
+
+<!-- TUTORIAL OVERLAY -->
+<div id="tutorial-overlay" class="hidden">
+    <div id="tutorial-spotlight"></div>
+    <div id="tutorial-card">
+        <div id="tutorial-step-icon">✦</div>
+        <h2 id="tutorial-title"></h2>
+        <p id="tutorial-desc"></p>
+        <div id="tutorial-footer">
+            <span id="tutorial-progress"></span>
+            <div id="tutorial-btns">
+                <button id="tutorial-skip-btn">Skip</button>
+                <button id="tutorial-next-btn">Next ›</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/player.js"></script>
+    <script src="game.js"></script>
+    <script src="js/combat.js"></script>
+    <script src="js/zones.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/cooking.js"></script>
+    <script src="js/main.js"></script>
+
+</body>
+</html>

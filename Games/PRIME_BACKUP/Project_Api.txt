@@ -1,0 +1,291 @@
+RuneScape Skilling Game Project API
+
+Recent Updates (2024)
+- Updated monster stats and drop tables to OSRS wiki accuracy
+- Changed TzTok-Jad Trial reward from fire cape to 1 uncut onyx
+- Set raid timers (pest control, barbarian assault, fight caves) to 15-minute cooldowns
+- Cleaned up temporary slayer data files (data/slayer/ directory removed)
+- Updated combat XP rates and drop mechanics for realism
+
+Purpose
+- This file is the quick-reference map for the current project.
+- It replaces the old Updates.txt wishlist/spec file as the main implementation reference.
+- Use this document to find systems, hooks, save keys, UI owners, and feature entry points quickly.
+
+Workspace Layout
+- index.html: main shell, static top tabs, menu markup, dev menu markup, core script tags.
+- css/style.css: global theme, tabs, panels, bank, GE, combat, minigames, pets, drop party, dev menu styling.
+- js/core/: core runtime objects and rendering.
+- js/mods/: grouped feature modules loaded dynamically by game.js.
+- docs/ideas.txt: non-runtime notes moved out of js/mods.
+- WORKING_PJ_BACKUP: full backup of the last known working project snapshot.
+
+Current Mod Folder Structure
+- js/mods/00_infrastructure/01_zones.js: zone registry and zone event helper.
+- js/mods/01_ui/02_zones_ui.js: creates Zones and Shop panels/tabs.
+- js/mods/01_ui/03_activity_ui.js: zone activity UI routing and skill-panel integration.
+- js/mods/02_data/05_items_loader.js: starter items and initial item setup.
+- js/mods/03_skills/04_woodcutting.js: woodcutting skill loop and rewards.
+- js/mods/03_skills/06_woodcutting_zones.js: woodcutting zone definitions.
+- js/mods/03_skills/10_fletching.js: fletching recipes and UI.
+- js/mods/03_skills/12_mining.js: mining skill loop and rewards.
+- js/mods/03_skills/13_mining_zones.js: mining zone definitions.
+- js/mods/03_skills/15_skills_suite.js: farming and skill menu suite.
+- js/mods/04_systems/07_grand_exchange.js: GE pricing, offers, buy/sell flow.
+- js/mods/04_systems/08_bank.js: bank storage, tabs, value display, collection log.
+- js/mods/04_systems/09_combat.js: combat, slayer, duel arena, monster tables.
+- js/mods/04_systems/11_clues.js: clue drops, caskets, rewards.
+- js/mods/05_features/16_raids_minigames.js: raids, pest control, barbarian assault, challenge fights, minigames tab.
+- js/mods/05_features/17_pets.js: pet unlocks, pet perks, pets tab.
+- js/mods/05_features/18_drop_party.js: INSTA DP / fun mode drop party tab and event flow.
+- js/mods/_legacy/14_skill_skeleton_mod.js: legacy skill skeleton module, not loaded by game.js.
+
+Core Runtime Files
+- js/core/mod_system.js: mod registry and hook dispatcher.
+- js/core/event_system.js: pub/sub event bus.
+- js/core/skill_class.js: Skill model class.
+- js/core/skills.js: canonical skill definitions and XP progression.
+- js/core/inventory.js: slot storage, add/remove items, stack rules, item normalization.
+- js/core/equipment.js: equip slots and equipped item state.
+- js/core/player.js: Player model assembly.
+- js/core/ui.js: render functions, top tab init, skill grid, inventory, equipment, stats.
+- js/core/game.js: boot flow, save/load, autosave, mod loading, dev menu actions.
+
+Boot Flow
+1. index.html loads all files in js/core.
+2. js/core/game.js reads MOD_PATHS and injects grouped mod scripts.
+3. Mods call RSGame.Game.registerMod(...).
+4. After save selection, game.js builds the Player and calls RSGame.Game.runHook("onGameInit", RSGame.Game).
+5. game.js renders core UI and then calls RSGame.Game.runHook("onAfterRender", RSGame.Game).
+
+Main Globals
+- window.RSGame: top-level namespace.
+- window.Player: active save/player object.
+- RSGame.Game: game controller, mod registry, save API, time scale API.
+- RSGame.Events: event bus.
+- RSGame.UI: render and tab API.
+- RSGame.Bank: bank API exposed by bank mod.
+- RSGame.GE: Grand Exchange pricing and offer API exposed by GE mod.
+- RSGame.Clues: clue reward/drop API exposed by clues mod.
+- RSGame.Zones: zone registration and lookup API exposed by zones mod.
+- RSGame.PetsPerks: pet perk helpers exposed by pets mod.
+
+Game.js Quick Reference
+- MOD_PATHS: grouped dynamic mod load list.
+- RSGame.Game.getTimeScale(): current game speed multiplier.
+- RSGame.Game.setTimeScale(multiplier): updates dev speed and emits gameSpeedChange.
+- RSGame.Game.saveNow: direct save function alias.
+- Save index key: rsgame.saveIndex.v1
+- Save blob prefix: rsgame.saveData.v1.
+- Dev unlock session key: rsgame.devUnlocked.v1
+- Dev speed session key: rsgame.devSpeed.v1
+- Autosave interval: 15000 ms.
+- Dev login username: Zyrex
+- Dev login password: Mark
+- Dev menu actions: addCoins, addPlatinum, addCasketSet, levelAll, maxAll, clearInv, saveNow, lockDev
+- Level-99 notification area is mounted inside index.html and exposed via window.showLevel99Notification
+
+Mod System API
+- File: js/core/mod_system.js
+- RSGame.Game.registerMod(mod): registers a mod object and records all function properties as hook handlers.
+- RSGame.Game.runHook(hookName, context): executes registered handlers for one hook.
+- Common hooks in this project:
+  - onGameInit(game)
+  - onAfterRender(game)
+
+Event Bus API
+- File: js/core/event_system.js
+- RSGame.Events.on(eventName, handler)
+- RSGame.Events.emit(eventName, payload)
+- RSGame.Events.off(eventName, handler)
+
+Known Event Names In Use
+- skillMenuSelect: emitted from ui.js when clicking a skill cell.
+- xpGain: emitted by skill loops like woodcutting/mining.
+- playerUpdated: used by GE, raids, pets, combat-related UIs.
+- equipmentChanged: used by raids/minigames and other stat-sensitive UIs.
+- inventoryRendered: used by fletching and duel inventory sync.
+- gameSpeedChange: used by combat and skill systems.
+- zoneLeave: emitted when leaving an activity.
+- zoneActivityStart: emitted when beginning a zone activity.
+- notification: toast/status event used by several systems.
+- funModeChanged: emitted when INSTA DP is toggled from dev menu.
+
+UI System Quick Reference
+- File: js/core/ui.js
+- RSGame.UI.renderPlayerSummary(player)
+- RSGame.UI.renderSkills(player)
+- RSGame.UI.renderInventory(player)
+- RSGame.UI.renderEquipment(player)
+- RSGame.UI.renderStats(player)
+- RSGame.UI.initTabs(): binds .tab-btn to .panel and applies current top-level tab order.
+- RSGame.UI.applyInventorySlotFrame(): sets inventory slot frame CSS asset.
+- RSGame.UI.getItemIcon(file): builds OSRS wiki thumb URL.
+- RSGame.UI.repairInventoryIcon(slot): normalizes stale/broken icons, including platinum tokens.
+
+Top-Level Tabs And Owners
+- skills: static button in index.html, rendered by ui.js.
+- inventory: static button in index.html, rendered by ui.js.
+- equipment: static button in index.html, rendered by ui.js.
+- stats: static button in index.html, rendered by ui.js.
+- zones: created by 02_zones_ui.js.
+- gathering: created by 02_zones_ui.js, currently labeled Shop.
+- bank: created by 08_bank.js.
+- combat: static button in index.html; panel built by 09_combat.js.
+- duel-arena: static button in index.html; panel built by 09_combat.js.
+- slayer: created by 09_combat.js.
+- ge: created by 07_grand_exchange.js, labeled Exchange.
+- minigames: created by 16_raids_minigames.js.
+- pets: created by 17_pets.js.
+- drop-party: created by 18_drop_party.js.
+- dev-login-toggle: static button in index.html; floating position controlled in css/style.css.
+
+Current Top-Level Tab Order
+- inventory
+- bank
+- skills
+- equipment
+- stats
+- minigames
+- duel-arena
+- drop-party
+- slayer
+- combat
+- zones
+- gathering
+- ge
+- pets
+
+Inventory And Equipment
+- Inventory file: js/core/inventory.js
+- Equipment file: js/core/equipment.js
+- Inventory stack special case: platinum_token
+- Coins/platinum token conversion handled in inventory.js, including overflow rollover when coins hit the 2,147,483,647 cap.
+- Platinum token/divine token rollover also handled in inventory.js when platinum tokens overflow.
+- Active skill hover tooltip now refreshes live while training, instead of requiring re-hover to show updated progress.
+- Inventory rendering and stale icon repair handled in ui.js.
+- Equipment bonus lookup is performed in ui.js using OSRS item mapping + OSRSBox item JSON.
+
+Equippable Item Configuration
+- Source of truth for equippable item data is the item payload passed to `inventory.addItem(...)` and the OSRSBox equipment mapping resolved by `js/core/inventory.js`.
+- Valid equip slots: `head`, `cape`, `neck`, `weapon`, `body`, `shield`, `legs`, `hands`, `feet`, `ring`, `ammo`.
+- Define equipment using OSRS wiki/OSRSBox item names and IDs so `fetchWikiIntel(...)` can resolve slot and bonus data automatically.
+- `itemType` should be set to `Equipment` for equippable items, and `leftClickAction` should be `Wield` for weapon/ammo or `Wear` for armor/other slots.
+
+| Item ID | Display Name | Equip Slot | Bonus Stats | Requirements | Notes |
+|---|---|---|---|---|---|
+| `bronze_sword` | Bronze sword | `weapon` | Attack bonuses from OSRSBox | Attack 1 | Standard wieldable weapon |
+| `bronze_pickaxe` | Bronze pickaxe | `weapon` | Attack/Crush bonus from OSRSBox | Attack 1 | Also used as a mining tool |
+| `iron_pickaxe` | Iron pickaxe | `weapon` | Attack/Crush bonus from OSRSBox | Attack 1 | Higher tool tier than bronze |
+| `knife` | Knife | `weapon` | Attack bonus from OSRSBox | Attack 1 | Tool that can also be wielded |
+| `leather_body` | Leather body | `body` | Defence bonuses from OSRSBox | Defence 1 | Starter armour piece |
+| `hsr_item` | HSR ring | `ring` | Custom bonus values | Custom requirement | Custom ring item with `Equip Ring` action |
+| `platinum_token` | Platinum token | — | Currency only | — | Not equippable |
+| `divine_token` | Divine token | — | Currency only | — | Not equippable |
+
+Notes:
+- For new OSRS items, add the matching OSRS wiki name and icon file to the item definition, then set `slot` and optional `bonuses`/`requirements` in the item payload.
+- If the OSRSBox equipment mapping resolves the item, `js/core/inventory.js` will auto-populate `slot`, `bonuses`, and `leftClickAction` from the wiki data.
+- Use this table as the documentation schema for future equipment additions. If a custom item does not resolve via OSRSBox, provide explicit `slot` and `bonuses` in the item object.
+
+Bank System
+- File: js/mods/04_systems/08_bank.js
+- Creates bank panel and bank tab.
+- Exposes bank refresh/add helpers on RSGame.Bank.
+- Handles deposit/withdraw, bank tabs, placeholders, collection log, legitimate obtain tracking.
+- Bank top display includes live total value.
+- Bank uses GE cache helpers to estimate item values.
+
+Grand Exchange System
+- File: js/mods/04_systems/07_grand_exchange.js
+- Creates Exchange tab and panel.
+- Uses prices.runescape.wiki price data.
+- Stores GE cache in localStorage.
+- Prices auto-refresh when a GE item is selected if the cached data is stale, removing the need for the manual refresh button.
+- GE market prices refresh on a 4-hour schedule and then continue to be reused for subsequent offer creation.
+- Offer price adjustments (+/- buttons) change only the submitted offer price, not the item's base market price.
+- Used as the shared price source for bank values, combat loot value estimates, and drop party pool building.
+
+Combat / Slayer / Duel Arena
+- File: js/mods/04_systems/09_combat.js
+- Owns combat panel, slayer panel, duel arena panel.
+- Contains monster definitions, boss definitions, slayer task metadata, duel staking state, and loot generation.
+- Combat responds to gameSpeedChange.
+- Duel arena inventory sync listens to playerUpdated and inventoryRendered.
+
+Zones / Activities / Skills
+- Zone registry core: js/mods/00_infrastructure/01_zones.js
+- Zones/Shop panels: js/mods/01_ui/02_zones_ui.js
+- Activity routing UI: js/mods/01_ui/03_activity_ui.js
+- Woodcutting: js/mods/03_skills/04_woodcutting.js and 06_woodcutting_zones.js
+- Mining: js/mods/03_skills/12_mining.js and 13_mining_zones.js
+- Fletching: js/mods/03_skills/10_fletching.js
+- Skills suite and farming: js/mods/03_skills/15_skills_suite.js
+
+Clues
+- File: js/mods/04_systems/11_clues.js
+- Owns clue generation, casket items, rewards, and skilling drop hooks.
+- Common integration point: RSGame.Clues?.trySkillingDrop?(player, skillName, qty)
+
+Raids / Minigames
+- File: js/mods/05_features/16_raids_minigames.js
+- Creates minigames tab/panel.
+- Includes Chambers of Xeric, Theatre of Blood, Tombs of Amascut, Pest Control, Barbarian Assault, and challenge fights.
+- Listens to playerUpdated and equipmentChanged to re-render dependent panels.
+
+Pets
+- File: js/mods/05_features/17_pets.js
+- Creates pets tab/panel.
+- Migrates legacy pet items to unlocks.
+- Exposes RSGame.PetsPerks helper functions for GE fill rate and reward multipliers.
+
+Drop Party
+- File: js/mods/05_features/18_drop_party.js
+- Creates drop-party tab/panel.
+- Gated by Player.funMode and the Dev Menu INSTA DP toggle.
+- Key phases: idle, join, awaitingClaim, cooldown.
+- Test flow: Start Test Drop Party Now -> Join Drop Party -> wait for timer -> result panel -> Deposit to Bank.
+- Uses GE price cache to build the reward pool.
+
+Dev Menu
+- Markup owner: index.html
+- Logic owner: js/core/game.js
+- Position/style owner: css/style.css
+- Current toggles/actions:
+  - Game Speed
+  - Stack every item
+  - Win every duel
+  - Enable INSTA DP
+  - Add 10M Coins
+  - Add Casket Set
+  - +1 All Skills
+  - Max All Skills (99)
+  - Clear Inventory
+  - Save Now
+  - Lock Dev Menu
+
+Save Data Notes
+- Visible game version text is V2.5 in index.html.
+- Save schema keys remain v1 intentionally for compatibility.
+- Save data includes player skills, inventory, equipment, combat state, bank state, flags, and feature-specific progress.
+
+Common Implementation Lookup
+- Change top tab order: js/core/ui.js
+- Add/remove a top-level tab: owning mod + js/core/ui.js order array
+- Change save schema or autosave behavior: js/core/game.js
+- Change dev menu actions: js/core/game.js
+- Change bank storage/value behavior: js/mods/04_systems/08_bank.js
+- Change GE pricing or offers: js/mods/04_systems/07_grand_exchange.js
+- Change monster tables, slayer, duel arena: js/mods/04_systems/09_combat.js
+- Change raids/minigames: js/mods/05_features/16_raids_minigames.js
+- Change pets/perks: js/mods/05_features/17_pets.js
+- Change Drop Party behavior: js/mods/05_features/18_drop_party.js
+- Change global UI theme: css/style.css
+- Change main shell/dev menu markup: index.html
+
+Known Non-Loaded / Legacy File
+- js/mods/_legacy/14_skill_skeleton_mod.js is preserved for reference but is not in MOD_PATHS.
+
+Working Notes
+- Updates.txt was previously used as a wishlist/spec and is no longer the project reference file.
+- Prefer updating source files directly and keeping this document accurate when system ownership or paths change.

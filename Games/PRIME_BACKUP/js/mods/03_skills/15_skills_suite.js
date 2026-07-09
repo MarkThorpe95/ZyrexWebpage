@@ -269,20 +269,20 @@
     Runecraft: {
       description: "Craft runes from rune essence.",
       actions: [
-        { id: "rc_air", name: "Craft Air Runes", level: 1, xp: 5, interval: 2400, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "air_rune", name: "Air rune", qty: 5, icon: "Air_rune.png", stackable: true }] },
-        { id: "rc_mind", name: "Craft Mind Runes", level: 2, xp: 5.5, interval: 2500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "mind_rune", name: "Mind rune", qty: 4, icon: "Mind_rune.png", stackable: true }] },
-        { id: "rc_water", name: "Craft Water Runes", level: 5, xp: 6, interval: 2600, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "water_rune", name: "Water rune", qty: 4, icon: "Water_rune.png", stackable: true }] },
-        { id: "rc_earth", name: "Craft Earth Runes", level: 9, xp: 6.5, interval: 2700, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "earth_rune", name: "Earth rune", qty: 4, icon: "Earth_rune.png", stackable: true }] },
-        { id: "rc_fire", name: "Craft Fire Runes", level: 14, xp: 7, interval: 3000, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "fire_rune", name: "Fire rune", qty: 4, icon: "Fire_rune.png", stackable: true }] },
-        { id: "rc_body", name: "Craft Body Runes", level: 20, xp: 7.5, interval: 2500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "body_rune", name: "Body rune", qty: 4, icon: "Body_rune.png", stackable: true }] },
-        { id: "rc_cosmic", name: "Craft Cosmic Runes", level: 27, xp: 8.5, interval: 3500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "cosmic_rune", name: "Cosmic rune", qty: 4, icon: "Cosmic_rune.png", stackable: true }] },
-        { id: "rc_chaos", name: "Craft Chaos Runes", level: 35, xp: 9.5, interval: 4000, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "chaos_rune", name: "Chaos rune", qty: 4, icon: "Chaos_rune.png", stackable: true }] },
-        { id: "rc_nature", name: "Craft Nature Runes", level: 44, xp: 10.5, interval: 4500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "nature_rune", name: "Nature rune", qty: 4, icon: "Nature_rune.png", stackable: true }] },
-        { id: "rc_law", name: "Craft Law Runes", level: 54, xp: 11.5, interval: 5000, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "law_rune", name: "Law rune", qty: 4, icon: "Law_rune.png", stackable: true }] },
-        { id: "rc_death", name: "Craft Death Runes", level: 65, xp: 13, interval: 5500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "death_rune", name: "Death rune", qty: 4, icon: "Death_rune.png", stackable: true }] },
-        { id: "rc_blood", name: "Craft Blood Runes", level: 77, xp: 14.5, interval: 600, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "blood_rune", name: "Blood rune", qty: 4, icon: "Blood_rune.png", stackable: true }] },
-        { id: "rc_soul", name: "Craft Soul Runes", level: 90, xp: 11, interval: 6500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "soul_rune", name: "Soul rune", qty: 4, icon: "Soul_rune.png", stackable: true }] },
-        { id: "rc_wrath", name: "Craft Wrath Runes", level: 95, xp: 12, interval: 7000, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "wrath_rune", name: "Wrath rune", qty: 50, icon: "Wrath_rune.png", stackable: true }] }
+        { id: "rc_air", name: "Craft Air Runes", level: 1, xp: 5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "air_rune", name: "Air rune", qty: 5, icon: "Air_rune.png", stackable: true }] },
+        { id: "rc_mind", name: "Craft Mind Runes", level: 2, xp: 5.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "mind_rune", name: "Mind rune", qty: 4, icon: "Mind_rune.png", stackable: true }] },
+        { id: "rc_water", name: "Craft Water Runes", level: 5, xp: 6, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "water_rune", name: "Water rune", qty: 4, icon: "Water_rune.png", stackable: true }] },
+        { id: "rc_earth", name: "Craft Earth Runes", level: 9, xp: 6.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "earth_rune", name: "Earth rune", qty: 4, icon: "Earth_rune.png", stackable: true }] },
+        { id: "rc_fire", name: "Craft Fire Runes", level: 14, xp: 7, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "fire_rune", name: "Fire rune", qty: 4, icon: "Fire_rune.png", stackable: true }] },
+        { id: "rc_body", name: "Craft Body Runes", level: 20, xp: 7.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "body_rune", name: "Body rune", qty: 4, icon: "Body_rune.png", stackable: true }] },
+        { id: "rc_cosmic", name: "Craft Cosmic Runes", level: 27, xp: 8.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "cosmic_rune", name: "Cosmic rune", qty: 4, icon: "Cosmic_rune.png", stackable: true }] },
+        { id: "rc_chaos", name: "Craft Chaos Runes", level: 35, xp: 9.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "chaos_rune", name: "Chaos rune", qty: 4, icon: "Chaos_rune.png", stackable: true }] },
+        { id: "rc_nature", name: "Craft Nature Runes", level: 44, xp: 10.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "nature_rune", name: "Nature rune", qty: 4, icon: "Nature_rune.png", stackable: true }] },
+        { id: "rc_law", name: "Craft Law Runes", level: 54, xp: 11.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "law_rune", name: "Law rune", qty: 4, icon: "Law_rune.png", stackable: true }] },
+        { id: "rc_death", name: "Craft Death Runes", level: 65, xp: 13, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "death_rune", name: "Death rune", qty: 4, icon: "Death_rune.png", stackable: true }] },
+        { id: "rc_blood", name: "Craft Blood Runes", level: 77, xp: 14.5, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "blood_rune", name: "Blood rune", qty: 4, icon: "Blood_rune.png", stackable: true }] },
+        { id: "rc_soul", name: "Craft Soul Runes", level: 90, xp: 11, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "soul_rune", name: "Soul rune", qty: 4, icon: "Soul_rune.png", stackable: true }] },
+        { id: "rc_wrath", name: "Craft Wrath Runes", level: 95, xp: 12, interval: 500, inputs: [{ id: "rune_essence", qty: 1 }], outputs: [{ id: "wrath_rune", name: "Wrath rune", qty: 50, icon: "Wrath_rune.png", stackable: true }] }
       ]
     },
 

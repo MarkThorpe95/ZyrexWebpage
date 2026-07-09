@@ -514,18 +514,19 @@ RSGame.Game = RSGame.Game || {};
       }
 
       if (action === "simulateNex100") {
-        const result = window.RSGame?.Combat?.simulateBossKillsToBank?.({
-          monsterId: "nex",
-          kills: 100,
-          player
+        const ok = player.inventory?.addItem?.({
+          id: "elysian_sigil",
+          name: "Elysian sigil",
+          qty: 1,
+          icon: "https://oldschool.runescape.wiki/images/thumb/Elysian_sigil.png/32px-Elysian_sigil.png"
         });
 
-        refreshAllUi();
-        if (result?.ok) {
-          setMenuStatus(result.message || "Simulated 100 Nex kills and sent loot to bank.", false);
-        } else {
-          setMenuStatus(result?.message || "Unable to simulate Nex kills right now.", true);
+        if (!ok) {
+          setMenuStatus("Inventory is full. Could not add Elysian sigil.", true);
+          return;
         }
+        refreshAllUi();
+        setMenuStatus("Added 1x Elysian sigil to inventory.", false);
         return;
       }
 

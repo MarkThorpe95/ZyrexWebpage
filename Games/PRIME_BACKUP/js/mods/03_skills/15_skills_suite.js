@@ -146,18 +146,18 @@
     Mining: {
       description: "Mine rocks directly from the Skills tab.",
       actions: [
-        { id: "mine_rune_essence", name: "Mine Rune essence", level: 1, xp: 5, interval: 2800, outputs: [{ id: "rune_essence", name: "Rune essence", qty: 1, icon: "Rune_essence.png", stackable: true }], displayIcon: "Rune_essence.png" },
-        { id: "mine_copper", name: "Mine Copper", level: 1, xp: 17.5, interval: 2800, outputs: [{ id: "copper_ore", name: "Copper Ore", qty: 1, icon: "Copper_ore.png", stackable: true }], displayIcon: "Copper_ore.png" },
-        { id: "mine_tin", name: "Mine Tin", level: 1, xp: 17.5, interval: 2800, outputs: [{ id: "tin_ore", name: "Tin Ore", qty: 1, icon: "Tin_ore.png", stackable: true }], displayIcon: "Tin_ore.png" },
-        { id: "mine_iron", name: "Mine Iron", level: 15, xp: 35, interval: 3200, outputs: [{ id: "iron_ore", name: "Iron Ore", qty: 1, icon: "Iron_ore.png", stackable: true }], displayIcon: "Iron_ore.png" },
-        { id: "mine_silver", name: "Mine Silver", level: 20, xp: 40, interval: 3400, outputs: [{ id: "silver_ore", name: "Silver Ore", qty: 1, icon: "Silver_ore.png", stackable: true }], displayIcon: "Silver_ore.png" },
+        { id: "mine_rune_essence", name: "Mine Rune essence", level: 1, xp: 5, interval: 250, outputs: [{ id: "rune_essence", name: "Rune essence", qty: 5, icon: "Rune_essence.png", stackable: true }], displayIcon: "Rune_essence.png" },
+        { id: "mine_copper", name: "Mine Copper", level: 1, xp: 17.5, interval: 1800, outputs: [{ id: "copper_ore", name: "Copper Ore", qty: 1, icon: "Copper_ore.png", stackable: true }], displayIcon: "Copper_ore.png" },
+        { id: "mine_tin", name: "Mine Tin", level: 1, xp: 17.5, interval: 1800, outputs: [{ id: "tin_ore", name: "Tin Ore", qty: 1, icon: "Tin_ore.png", stackable: true }], displayIcon: "Tin_ore.png" },
+        { id: "mine_iron", name: "Mine Iron", level: 15, xp: 35, interval: 2200, outputs: [{ id: "iron_ore", name: "Iron Ore", qty: 1, icon: "Iron_ore.png", stackable: true }], displayIcon: "Iron_ore.png" },
+        { id: "mine_silver", name: "Mine Silver", level: 20, xp: 40, interval: 2400, outputs: [{ id: "silver_ore", name: "Silver Ore", qty: 1, icon: "Silver_ore.png", stackable: true }], displayIcon: "Silver_ore.png" },
         { id: "mine_pure_essence", name: "Mine Pure essence", level: 1, xp: 5, interval: 2800, outputs: [{ id: "pure_essence", name: "Pure essence", qty: 1, icon: "Pure_essence.png", stackable: true }], displayIcon: "Pure_essence.png" },
-        { id: "mine_coal", name: "Mine Coal", level: 30, xp: 50, interval: 3600, outputs: [{ id: "coal", name: "Coal", qty: 1, icon: "Coal.png", stackable: true }], displayIcon: "Coal.png" },
-        { id: "mine_gold", name: "Mine Gold", level: 40, xp: 65, interval: 3800, outputs: [{ id: "gold_ore", name: "Gold Ore", qty: 1, icon: "Gold_ore.png", stackable: true }], displayIcon: "Gold_ore.png" },
-        { id: "mine_mithril", name: "Mine Mithril", level: 55, xp: 80, interval: 4200, outputs: [{ id: "mithril_ore", name: "Mithril Ore", qty: 1, icon: "Mithril_ore.png", stackable: true }], displayIcon: "Mithril_ore.png" },
+        { id: "mine_coal", name: "Mine Coal", level: 30, xp: 50, interval: 2600, outputs: [{ id: "coal", name: "Coal", qty: 1, icon: "Coal.png", stackable: true }], displayIcon: "Coal.png" },
+        { id: "mine_gold", name: "Mine Gold", level: 40, xp: 65, interval: 2800, outputs: [{ id: "gold_ore", name: "Gold Ore", qty: 1, icon: "Gold_ore.png", stackable: true }], displayIcon: "Gold_ore.png" },
+        { id: "mine_mithril", name: "Mine Mithril", level: 55, xp: 80, interval: 3200, outputs: [{ id: "mithril_ore", name: "Mithril Ore", qty: 1, icon: "Mithril_ore.png", stackable: true }], displayIcon: "Mithril_ore.png" },
         { id: "mine_adamantite", name: "Mine Adamantite", level: 70, xp: 95, interval: 5000, outputs: [{ id: "adamantite_ore", name: "Adamantite Ore", qty: 1, icon: "Adamantite_ore.png", stackable: true }], displayIcon: "Adamantite_ore.png" },
-        { id: "mine_soft_clay", name: "Mine Soft Clay", level: 70, xp: 5, interval: 2800, outputs: [{ id: "soft_clay", name: "Soft Clay", qty: 1, icon: "Soft_clay.png", stackable: true }], displayIcon: "Soft_clay.png" },
-        { id: "mine_runite", name: "Mine Runite", level: 85, xp: 125, interval: 5800, outputs: [{ id: "runite_ore", name: "Runite Ore", qty: 5, icon: "Runite_ore.png", stackable: true }], displayIcon: "Runite_ore.png" },
+        { id: "mine_soft_clay", name: "Mine Soft Clay", level: 70, xp: 5, interval: 250, outputs: [{ id: "soft_clay", name: "Soft Clay", qty: 1, icon: "Soft_clay.png", stackable: true }], displayIcon: "Soft_clay.png" },
+        { id: "mine_runite", name: "Mine Runite", level: 85, xp: 125, interval: 4800, outputs: [{ id: "runite_ore", name: "Runite Ore", qty: 5, icon: "Runite_ore.png", stackable: true }], displayIcon: "Runite_ore.png" },
         { id: "mine_amethyst", name: "Mine Amethyst", level: 92, xp: 240, interval: 600, outputs: [{ id: "amethyst", name: "Amethyst", qty: 16, icon: "Amethyst.png", stackable: true }], displayIcon: "Amethyst.png" }
         
       ]

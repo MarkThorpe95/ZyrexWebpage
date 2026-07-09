@@ -1302,9 +1302,13 @@ window.RSGame = window.RSGame || {};
     return "low";
   }
 
+  function buildDropIcon(drop) {
+    return "https://oldschool.runescape.wiki/images/thumb/" + drop.icon + "/32px-" + drop.icon;
+  }
+
   function addDropToInventory(drop, qty) {
     const amount = Math.max(1, Number(qty) || 1);
-    const icon = "https://oldschool.runescape.wiki/images/thumb/" + drop.icon + "/32px-" + drop.icon;
+    const icon = buildDropIcon(drop);
     const ok = window.Player?.inventory?.addItem?.({
       id: drop.id,
       name: drop.name,
@@ -1314,6 +1318,23 @@ window.RSGame = window.RSGame || {};
     if (!ok) return false;
     RSGame.Bank?.recordLegitimateObtain?.(window.Player, { id: drop.id, name: drop.name, icon, category: drop.category || "Combat Drops" }, amount);
     RSGame.Events?.emit?.("playerUpdated");
+    return true;
+  }
+
+  function addDropToBank(player, drop, qty) {
+    const amount = Math.max(1, Number(qty) || 1);
+    if (!player || !window.RSGame?.Bank?.addToBank) return false;
+
+    const icon = buildDropIcon(drop);
+    const bankItem = {
+      id: drop.id,
+      name: drop.name,
+      icon,
+      category: drop.category || "Combat Drops"
+    };
+
+    window.RSGame.Bank.addToBank(player, bankItem, amount);
+    RSGame.Bank?.recordLegitimateObtain?.(player, bankItem, amount);
     return true;
   }
 
@@ -1371,6 +1392,95 @@ window.RSGame = window.RSGame || {};
     }
 
     return rewards;
+  }
+
+  function simulateBossKillsToBank(options = {}) {
+    const player = options.player || window.Player;
+    if (!player) {
+      return { ok: false, message: "No player loaded for simulation." };
+    }
+
+    const kills = Math.max(1, Math.floor(Number(options.kills) || 1));
+    const monsterId = String(options.monsterId || "nex");
+    const monster = getMonsterById(monsterId);
+    if (!monster) {
+      return { ok: false, message: "Monster not found: " + monsterId + "." };
+    }
+
+    const rewardTotals = new Map();
+    const pushReward = (id, name, qty) => {
+      const amount = Math.max(1, Number(qty) || 1);
+      const key = String(id || name || "unknown");
+      const current = rewardTotals.get(key) || { name: name || key, qty: 0 };
+      current.qty += amount;
+      rewardTotals.set(key, current);
+    };
+
+    for (let kill = 0; kill < kills; kill++) {
+      const baseCoins = rand(monster.coinMin, monster.coinMax);
+      const finalCoins = Math.max(0, Number(window.RSGame?.MagicPerks?.applyCoinRewardMultiplier?.(baseCoins, "combat", player) ?? baseCoins) || 0);
+      if (finalCoins > 0) {
+        const coinDrop = {
+          id: "coins",
+          name: "Coins",
+          icon: "Coins_10000.png",
+          category: "Combat Drops"
+        };
+        addDropToBank(player, coinDrop, finalCoins);
+        pushReward("coins", "Coins", finalCoins);
+      }
+
+      const tier = getDropTier(monster);
+      const pool = (MONSTER_DROP_COMMON[tier] || MONSTER_DROP_COMMON.low).concat(getMonsterThemePool(monster));
+      const rollCount = monster.lvl >= 220 ? 2 : 1;
+
+      for (let i = 0; i < rollCount; i++) {
+        const picked = weightedPick(pool);
+        if (!picked) continue;
+        const qty = rand(picked.qtyMin || 1, picked.qtyMax || 1);
+        if (addDropToBank(player, picked, qty)) {
+          pushReward(picked.id, picked.name, qty);
+        }
+      }
+
+      const uniques = BOSS_UNIQUE_DROPS[monster.id];
+      if (Array.isArray(uniques) && uniques.length) {
+        let uniqueChance = monster.lvl >= 500 ? 0.07 : 0.04;
+        if (RSGame.CustomItems?.hasHazelmereSignetRing?.(player)) {
+          uniqueChance *= 10;
+        }
+        if (Math.random() < uniqueChance) {
+          const unique = weightedPick(uniques);
+          if (unique && addDropToBank(player, unique, 1)) {
+            pushReward(unique.id, unique.name, 1);
+          }
+        }
+      }
+
+      let globalRareChance = monster.lvl >= 300 ? 0.05 : monster.lvl >= 150 ? 0.03 : 0.015;
+      if (RSGame.CustomItems?.hasHazelmereSignetRing?.(player)) {
+        globalRareChance *= 10;
+      }
+      if (Math.random() < globalRareChance) {
+        const rare = weightedPick(GLOBAL_RARE_DROPS);
+        if (rare && addDropToBank(player, rare, 1)) {
+          pushReward(rare.id, rare.name, 1);
+        }
+      }
+    }
+
+    RSGame.Bank?.refresh?.();
+    RSGame.Game?.saveNow?.();
+
+    const summary = Array.from(rewardTotals.values())
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 6)
+      .map((entry) => (entry.name === "Coins" ? entry.qty.toLocaleString() + " coins" : entry.qty.toLocaleString() + "x " + entry.name));
+
+    return {
+      ok: true,
+      message: "Simulated " + kills + " " + monster.name + " kills. Loot sent to bank." + (summary.length ? " Top drops: " + summary.join(", ") + "." : "")
+    };
   }
 
   function onPlayerDied() {
@@ -2608,6 +2718,12 @@ window.RSGame = window.RSGame || {};
   /* ==========================================================
      MOD REGISTRATION
   ========================================================== */
+  RSGame.Combat = {
+    ...(RSGame.Combat || {}),
+    getMonsterById,
+    simulateBossKillsToBank
+  };
+
   RSGame.Game.registerMod({
     name: "Combat & Duel Arena",
 

@@ -513,51 +513,18 @@ RSGame.Game = RSGame.Game || {};
         return;
       }
 
-      if (action === "addCasketSet") {
-        const stackToggleEl = document.getElementById("dev-stack-toggle");
-        const shouldStack = !!player.stackAllItems || !!player.inventory?.stackAllItems || !!stackToggleEl?.checked;
-
-        if (shouldStack && typeof player.inventory?.setStackAll === "function") {
-          player.inventory.setStackAll(true);
-          player.stackAllItems = true;
-        }
-
-        const casketSet = [
-          { id: "clue_casket_easy", name: "Clue casket (easy)", icon: "https://oldschool.runescape.wiki/images/thumb/Clue_scroll_(easy).png/32px-Clue_scroll_(easy).png" },
-          { id: "clue_casket_medium", name: "Clue casket (medium)", icon: "https://oldschool.runescape.wiki/images/thumb/Clue_scroll_(medium).png/32px-Clue_scroll_(medium).png" },
-          { id: "clue_casket_hard", name: "Clue casket (hard)", icon: "https://oldschool.runescape.wiki/images/thumb/Clue_scroll_(hard).png/32px-Clue_scroll_(hard).png" },
-          { id: "clue_casket_elite", name: "Clue casket (elite)", icon: "https://oldschool.runescape.wiki/images/thumb/Clue_scroll_(elite).png/32px-Clue_scroll_(elite).png" },
-          { id: "clue_casket_master", name: "Clue casket (master)", icon: "https://oldschool.runescape.wiki/images/thumb/Clue_scroll_(master).png/32px-Clue_scroll_(master).png" }
-        ];
-
-        let added = 0;
-        const perType = 10;
-        const targetTotal = casketSet.length * perType;
-        for (let i = 0; i < casketSet.length; i++) {
-          for (let n = 0; n < perType; n++) {
-            const ok = player.inventory.addItem({
-              id: casketSet[i].id,
-              name: casketSet[i].name,
-              qty: 1,
-              icon: casketSet[i].icon,
-              stackable: shouldStack
-            });
-            if (!ok) break;
-            added += 1;
-          }
-        }
-
-        if (shouldStack && typeof player.inventory?.consolidateStacks === "function") {
-          player.inventory.consolidateStacks();
-        }
+      if (action === "simulateNex100") {
+        const result = window.RSGame?.Combat?.simulateBossKillsToBank?.({
+          monsterId: "nex",
+          kills: 100,
+          player
+        });
 
         refreshAllUi();
-        if (added === targetTotal) {
-          setMenuStatus("Added 10 of each clue casket to inventory.", false);
-        } else if (added > 0) {
-          setMenuStatus("Added " + added + "/" + targetTotal + " caskets (inventory full).", true);
+        if (result?.ok) {
+          setMenuStatus(result.message || "Simulated 100 Nex kills and sent loot to bank.", false);
         } else {
-          setMenuStatus("Inventory is full. Could not add caskets.", true);
+          setMenuStatus(result?.message || "Unable to simulate Nex kills right now.", true);
         }
         return;
       }

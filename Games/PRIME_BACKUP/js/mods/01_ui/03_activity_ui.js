@@ -48,16 +48,16 @@
           key: "Mining",
           functional: true,
           activities: [
-            { id: "copper", name: "Mine Copper", level: 1, xp: 17.5, interval: 2800, icon: "Copper_ore.png", output: "Copper Ore", outputIcon: "Copper_ore.png" },
-            { id: "tin", name: "Mine Tin", level: 1, xp: 17.5, interval: 2800, icon: "Tin_ore.png", output: "Tin Ore", outputIcon: "Tin_ore.png" },
-            { id: "iron", name: "Mine Iron", level: 15, xp: 35, interval: 3200, icon: "Iron_ore.png", output: "Iron Ore", outputIcon: "Iron_ore.png" },
-            { id: "silver", name: "Mine Silver", level: 20, xp: 40, interval: 3400, icon: "Silver_ore.png", output: "Silver Ore", outputIcon: "Silver_ore.png" },
-            { id: "coal", name: "Mine Coal", level: 30, xp: 50, interval: 3600, icon: "Coal.png", output: "Coal", outputIcon: "Coal.png" },
-            { id: "gold", name: "Mine Gold", level: 40, xp: 65, interval: 3900, icon: "Gold_ore.png", output: "Gold Ore", outputIcon: "Gold_ore.png" },
-            { id: "mithril", name: "Mine Mithril", level: 55, xp: 80, interval: 4200, icon: "Mithril_ore.png", output: "Mithril Ore", outputIcon: "Mithril_ore.png" },
+            { id: "copper", name: "Mine Copper", level: 1, xp: 17.5, interval: 1800, icon: "Copper_ore.png", output: "Copper Ore", outputIcon: "Copper_ore.png" },
+            { id: "tin", name: "Mine Tin", level: 1, xp: 17.5, interval: 1800, icon: "Tin_ore.png", output: "Tin Ore", outputIcon: "Tin_ore.png" },
+            { id: "iron", name: "Mine Iron", level: 15, xp: 35, interval: 2200, icon: "Iron_ore.png", output: "Iron Ore", outputIcon: "Iron_ore.png" },
+            { id: "silver", name: "Mine Silver", level: 20, xp: 40, interval: 2400, icon: "Silver_ore.png", output: "Silver Ore", outputIcon: "Silver_ore.png" },
+            { id: "coal", name: "Mine Coal", level: 30, xp: 50, interval: 2600, icon: "Coal.png", output: "Coal", outputIcon: "Coal.png" },
+            { id: "gold", name: "Mine Gold", level: 40, xp: 65, interval: 2900, icon: "Gold_ore.png", output: "Gold Ore", outputIcon: "Gold_ore.png" },
+            { id: "mithril", name: "Mine Mithril", level: 55, xp: 80, interval: 3200, icon: "Mithril_ore.png", output: "Mithril Ore", outputIcon: "Mithril_ore.png" },
             { id: "adamantite", name: "Mine Adamantite", level: 70, xp: 95, interval: 5000, icon: "Adamantite_ore.png", output: "Adamantite Ore", outputIcon: "Adamantite_ore.png" },
-            { id: "runite", name: "Mine Runite", level: 85, xp: 125, interval: 5800, icon: "Runite_ore.png", output: "Runite Ore", outputIcon: "Runite_ore.png" },
-            { id: "amethyst", name: "Mine Amethyst", level: 92, xp: 240, interval: 6800, icon: "Amethyst.png", output: "Amethyst", outputIcon: "Amethyst.png" }
+            { id: "runite", name: "Mine Runite", level: 85, xp: 125, interval: 4800, icon: "Runite_ore.png", output: "Runite Ore", outputIcon: "Runite_ore.png" },
+            { id: "amethyst", name: "Mine Amethyst", level: 92, xp: 240, interval: 800, icon: "Amethyst.png", output: "Amethyst", outputIcon: "Amethyst.png" }
           ]
         },
         fishing: {
@@ -66,21 +66,21 @@
           key: "Fishing",
           functional: false,
           activities: [
-            { id: "shrimp", name: "Net Shrimp", level: 1, xp: 10, interval: 2200, icon: "Raw_shrimps.png", output: "Raw Shrimps", outputIcon: "Raw_shrimps.png" },
-            { id: "sardine", name: "Bait Sardine", level: 5, xp: 20, interval: 2500, icon: "Raw_sardine.png", output: "Raw Sardine", outputIcon: "Raw_sardine.png" },
-            { id: "herring", name: "Bait Herring", level: 10, xp: 30, interval: 2700, icon: "Raw_herring.png", output: "Raw Herring", outputIcon: "Raw_herring.png" },
-            { id: "anchovies", name: "Net Anchovies", level: 15, xp: 40, interval: 2900, icon: "Raw_anchovies.png", output: "Raw Anchovies", outputIcon: "Raw_anchovies.png" },
-            { id: "trout", name: "Lure Trout", level: 20, xp: 50, interval: 3000, icon: "Raw_trout.png", output: "Raw Trout", outputIcon: "Raw_trout.png" },
-            { id: "salmon", name: "Lure Salmon", level: 30, xp: 70, interval: 3400, icon: "Raw_salmon.png", output: "Raw Salmon", outputIcon: "Raw_salmon.png" },
-            { id: "tuna", name: "Harpoon Tuna", level: 35, xp: 80, interval: 3700, icon: "Raw_tuna.png", output: "Raw Tuna", outputIcon: "Raw_tuna.png" },
-            { id: "lobster", name: "Cage Lobster", level: 40, xp: 90, interval: 4200, icon: "Raw_lobster.png", output: "Raw Lobster", outputIcon: "Raw_lobster.png" },
-            { id: "swordfish", name: "Harpoon Swordfish", level: 50, xp: 100, interval: 4500, icon: "Raw_swordfish.png", output: "Raw Swordfish", outputIcon: "Raw_swordfish.png" },
-            { id: "monkfish", name: "Net Monkfish", level: 62, xp: 120, interval: 5000, icon: "Raw_monkfish.png", output: "Raw Monkfish", outputIcon: "Raw_monkfish.png" },
-            { id: "karambwan", name: "Fish Karambwan", level: 65, xp: 50, interval: 3200, icon: "Raw_karambwan.png", output: "Raw Karambwan", outputIcon: "Raw_karambwan.png" },
-            { id: "shark", name: "Harpoon Shark", level: 76, xp: 110, interval: 5600, icon: "Raw_shark.png", output: "Raw Shark", outputIcon: "Raw_shark.png" },
-            { id: "anglerfish", name: "Catch Anglerfish", level: 82, xp: 120, interval: 5900, icon: "Raw_anglerfish.png", output: "Raw Anglerfish", outputIcon: "Raw_anglerfish.png" },
-            { id: "dark_crab", name: "Cage Dark Crabs", level: 85, xp: 130, interval: 6200, icon: "Raw_dark_crab.png", output: "Raw Dark Crab", outputIcon: "Raw_dark_crab.png" },
-            { id: "sacred_eel", name: "Fish Sacred Eels", level: 87, xp: 105, interval: 5200, icon: "Sacred_eel.png", output: "Sacred Eel", outputIcon: "Sacred_eel.png" }
+            { id: "shrimp", name: "Net Shrimp", level: 1, xp: 10, interval: 1200, icon: "Raw_shrimps.png", output: "Raw Shrimps", outputIcon: "Raw_shrimps.png" },
+            { id: "sardine", name: "Bait Sardine", level: 5, xp: 20, interval: 1500, icon: "Raw_sardine.png", output: "Raw Sardine", outputIcon: "Raw_sardine.png" },
+            { id: "herring", name: "Bait Herring", level: 10, xp: 30, interval: 1700, icon: "Raw_herring.png", output: "Raw Herring", outputIcon: "Raw_herring.png" },
+            { id: "anchovies", name: "Net Anchovies", level: 15, xp: 40, interval: 1900, icon: "Raw_anchovies.png", output: "Raw Anchovies", outputIcon: "Raw_anchovies.png" },
+            { id: "trout", name: "Lure Trout", level: 20, xp: 50, interval: 2000, icon: "Raw_trout.png", output: "Raw Trout", outputIcon: "Raw_trout.png" },
+            { id: "salmon", name: "Lure Salmon", level: 30, xp: 70, interval: 2400, icon: "Raw_salmon.png", output: "Raw Salmon", outputIcon: "Raw_salmon.png" },
+            { id: "tuna", name: "Harpoon Tuna", level: 35, xp: 80, interval: 2700, icon: "Raw_tuna.png", output: "Raw Tuna", outputIcon: "Raw_tuna.png" },
+            { id: "lobster", name: "Cage Lobster", level: 40, xp: 90, interval: 3200, icon: "Raw_lobster.png", output: "Raw Lobster", outputIcon: "Raw_lobster.png" },
+            { id: "swordfish", name: "Harpoon Swordfish", level: 50, xp: 100, interval: 3500, icon: "Raw_swordfish.png", output: "Raw Swordfish", outputIcon: "Raw_swordfish.png" },
+            { id: "monkfish", name: "Net Monkfish", level: 62, xp: 120, interval: 4000, icon: "Raw_monkfish.png", output: "Raw Monkfish", outputIcon: "Raw_monkfish.png" },
+            { id: "karambwan", name: "Fish Karambwan", level: 65, xp: 50, interval: 2200, icon: "Raw_karambwan.png", output: "Raw Karambwan", outputIcon: "Raw_karambwan.png" },
+            { id: "shark", name: "Harpoon Shark", level: 76, xp: 110, interval: 4600, icon: "Raw_shark.png", output: "Raw Shark", outputIcon: "Raw_shark.png" },
+            { id: "anglerfish", name: "Catch Anglerfish", level: 82, xp: 120, interval: 4900, icon: "Raw_anglerfish.png", output: "Raw Anglerfish", outputIcon: "Raw_anglerfish.png" },
+            { id: "dark_crab", name: "Cage Dark Crabs", level: 85, xp: 130, interval: 5200, icon: "Raw_dark_crab.png", output: "Raw Dark Crab", outputIcon: "Raw_dark_crab.png" },
+            { id: "sacred_eel", name: "Fish Sacred Eels", level: 87, xp: 105, interval: 4200, icon: "Sacred_eel.png", output: "Sacred Eel", outputIcon: "Sacred_eel.png" }
           ]
         },
         fletching: {

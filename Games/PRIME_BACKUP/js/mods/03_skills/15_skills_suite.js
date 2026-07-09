@@ -146,7 +146,7 @@
     Mining: {
       description: "Mine rocks directly from the Skills tab.",
       actions: [
-        { id: "mine_rune_essence", name: "Mine Rune essence", level: 1, xp: 5, interval: 250, outputs: [{ id: "rune_essence", name: "Rune essence", qty: 5, icon: "Rune_essence.png", stackable: true }], displayIcon: "Rune_essence.png" },
+        { id: "mine_rune_essence", name: "Mine Rune essence", level: 1, xp: 5, interval: 100, outputs: [{ id: "rune_essence", name: "Rune essence", qty: 5, icon: "Rune_essence.png", stackable: true }], displayIcon: "Rune_essence.png" },
         { id: "mine_copper", name: "Mine Copper", level: 1, xp: 17.5, interval: 1800, outputs: [{ id: "copper_ore", name: "Copper Ore", qty: 1, icon: "Copper_ore.png", stackable: true }], displayIcon: "Copper_ore.png" },
         { id: "mine_tin", name: "Mine Tin", level: 1, xp: 17.5, interval: 1800, outputs: [{ id: "tin_ore", name: "Tin Ore", qty: 1, icon: "Tin_ore.png", stackable: true }], displayIcon: "Tin_ore.png" },
         { id: "mine_iron", name: "Mine Iron", level: 15, xp: 35, interval: 2200, outputs: [{ id: "iron_ore", name: "Iron Ore", qty: 1, icon: "Iron_ore.png", stackable: true }], displayIcon: "Iron_ore.png" },

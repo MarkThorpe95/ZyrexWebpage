@@ -1,10 +1,10 @@
 window.RSGame = window.RSGame || {};
 
 (function () {
-  const ROUND_INTERVAL_MS = 10 * 60 * 1000;
-  const JOIN_WINDOW_MS = 30 * 60 * 1000; // 30 minutes
+  const ROUND_INTERVAL_MS = 15 * 60 * 1000;
+  const JOIN_WINDOW_MS = 60 * 1000; // 1 minute join window per round
   const JOIN_AFTER_PLAYER_MS = 10 * 1000;
-  const SKIP_COOLDOWN_MS = 5 * 60 * 1000;
+  const PENDING_AUTO_DEPOSIT_MS = 5 * 60 * 1000;
   const TICK_MS = 1000;
 
   const VALUE_FLOOR_BY_TIER = {
@@ -20,10 +20,9 @@ window.RSGame = window.RSGame || {};
 
   const state = {
     enabled: false,
-    phase: "idle", // idle | join | awaitingClaim | cooldown
+    phase: "idle", // idle | join
     nextAt: 0,
     joinEndsAt: 0,
-    cooldownEndsAt: 0,
     event: null,
     collapsed: false,
     pendingReward: null,
@@ -448,14 +447,11 @@ window.RSGame = window.RSGame || {};
     if (!result || !result.won || result.won.length === 0) {
       body.innerHTML = '<div class="drop-party-result-empty">No loot this round. Better luck next time.</div>';
       depositBtn.disabled = true;
-      // Immediately reset event state and schedule next round if no loot
+      // Auto-close the no-loot result toast without changing round cadence.
       setTimeout(() => {
         hideResultPanel();
-        state.phase = "idle";
-        state.nextAt = now() + ROUND_INTERVAL_MS;
-        state.joinedThisRound = false;
         render();
-      }, 2000); // Show message for 2 seconds before resetting
+      }, 2000);
     } else {
       body.innerHTML = ''
         + '<div class="drop-party-result-summary">'
@@ -475,6 +471,7 @@ window.RSGame = window.RSGame || {};
     const wrap = panel.querySelector("#drop-party-result");
     if (wrap) wrap.hidden = true;
     state.pendingReward = null;
+    state.pendingRewardTime = 0;
   }
 
   function ensurePanel() {
@@ -525,13 +522,12 @@ window.RSGame = window.RSGame || {};
     });
 
     panel.querySelector("#drop-party-start-now").addEventListener("click", () => {
-      if (!state.enabled || !gameRef?.player || state.phase === "awaitingClaim") return;
+      if (!state.enabled || !gameRef?.player || state.phase === "join") return;
       const t = now();
       state.event = buildEvent(gameRef.player);
       state.event.testMode = true;
       state.phase = "join";
       state.joinEndsAt = t + JOIN_WINDOW_MS;
-      state.cooldownEndsAt = 0;
       state.joinedThisRound = false;
       notify("Drop Party test round started instantly.");
       render();
@@ -621,31 +617,14 @@ window.RSGame = window.RSGame || {};
       return;
     }
 
-    if (state.phase === "awaitingClaim") {
-      if (statusEl) statusEl.textContent = "Claim pending: deposit your drop party loot.";
-      if (metaEl) metaEl.innerHTML = "<div>Next drop party starts after claim is deposited.</div>";
-      renderLootPreview([]);
-      if (joinBtn) {
-        joinBtn.disabled = true;
-        joinBtn.textContent = "Join Drop Party";
-      }
-      return;
+    const untilNext = Math.max(0, state.nextAt - now());
+    if (state.pendingReward) {
+      if (statusEl) statusEl.textContent = "Claim pending. Next drop party in: " + formatMs(untilNext);
+      if (metaEl) metaEl.innerHTML = "<div>Your loot can be deposited now or will auto-deposit in 5 minutes.</div>";
+    } else {
+      if (statusEl) statusEl.textContent = "Next drop party in: " + formatMs(untilNext);
+      if (metaEl) metaEl.innerHTML = "<div>Drop parties run every 15 minutes.</div>";
     }
-
-    if (state.phase === "cooldown") {
-      const left = Math.max(0, state.cooldownEndsAt - now());
-      if (statusEl) statusEl.textContent = "Drop Party skipped. Cooldown: " + formatMs(left);
-      if (metaEl) metaEl.innerHTML = "<div>No loot this round.</div>";
-      renderLootPreview([]);
-      if (joinBtn) {
-        joinBtn.disabled = true;
-        joinBtn.textContent = "Join Drop Party";
-      }
-      return;
-    }
-
-    if (statusEl) statusEl.textContent = "";
-    if (metaEl) metaEl.innerHTML = "";
     renderLootPreview([]);
     if (joinBtn) {
       joinBtn.disabled = true;
@@ -664,7 +643,7 @@ window.RSGame = window.RSGame || {};
       state.phase = "join";
       state.joinEndsAt = t + JOIN_WINDOW_MS;
       state.joinedThisRound = false;
-      notify("Drop Party incoming! Join within 30 minutes.");
+      notify("Drop Party incoming! Join within 1 minute.");
       render();
       return;
     }
@@ -674,28 +653,21 @@ window.RSGame = window.RSGame || {};
         const forceReward = !!state.event?.testMode;
         const result = simulateJoinOutcome(gameRef.player, state.event, { forceReward });
         showResultPanel(result);
-        state.phase = "awaitingClaim";
+        state.phase = "idle";
+        state.nextAt = t + ROUND_INTERVAL_MS;
         state.event = null;
-        console.log('[DropParty DEBUG] Transition: join → awaitingClaim', { t });
+        console.log('[DropParty DEBUG] Transition: join → idle (joined)', { t, nextAt: state.nextAt });
         notify("Drop Party ended. Review loot and deposit to bank.");
         render();
         return;
       }
 
-      state.phase = "cooldown";
-      state.event = null;
-      state.cooldownEndsAt = t + SKIP_COOLDOWN_MS;
-      state.joinedThisRound = false;
-      console.log('[DropParty DEBUG] Transition: join → cooldown', { t });
-      notify("Drop Party round skipped. 5-minute cooldown started.");
-      render();
-      return;
-    }
-
-    if (state.phase === "cooldown" && t >= state.cooldownEndsAt) {
       state.phase = "idle";
-      state.nextAt = t;
-      console.log('[DropParty DEBUG] Transition: cooldown → idle', { t });
+      state.event = null;
+      state.nextAt = t + ROUND_INTERVAL_MS;
+      state.joinedThisRound = false;
+      console.log('[DropParty DEBUG] Transition: join → idle (skipped)', { t, nextAt: state.nextAt });
+      notify("Drop Party round skipped. Next round in 15 minutes.");
       render();
       return;
     }
@@ -719,10 +691,11 @@ window.RSGame = window.RSGame || {};
       render();
       return;
     }
-    // Auto-send loot to bank if unclaimed for 5 minutes
-    if (state.phase === "awaitingClaim" && state.pendingReward && state.pendingRewardTime) {
+    // Auto-send loot to bank if unclaimed for 5 minutes.
+    // This no longer blocks the 15-minute round schedule.
+    if (state.pendingReward && state.pendingRewardTime) {
       const t = now();
-      if (t - state.pendingRewardTime >= 5 * 60 * 1000) { // 5 minutes
+      if (t - state.pendingRewardTime >= PENDING_AUTO_DEPOSIT_MS) {
         const outcome = depositLootToBank(gameRef.player, state.pendingReward.won || []);
         if (outcome.gainedItems > 0) {
           notify("Drop Party: Unclaimed loot auto-deposited (" + compact(outcome.gainedItems) + " items, ~" + compact(outcome.gainedValue) + " gp) to bank.");
@@ -730,12 +703,9 @@ window.RSGame = window.RSGame || {};
           notify("Drop Party: No loot to auto-deposit from this round.");
         }
         state.pendingReward = null;
-        state.phase = "idle";
-        state.nextAt = now() + ROUND_INTERVAL_MS;
-        state.joinedThisRound = false;
-        console.log('[DropParty DEBUG] Auto-deposit: awaitingClaim → idle', { t, nextAt: state.nextAt });
+        state.pendingRewardTime = 0;
+        console.log('[DropParty DEBUG] Auto-deposit complete', { t, nextAt: state.nextAt });
         render();
-        return;
       }
     }
     startRoundIfNeeded();
@@ -763,17 +733,7 @@ window.RSGame = window.RSGame || {};
       tickTimer = setInterval(onTick, TICK_MS);
       onTick();
 
-      // Auto-generate a drop party after player loads their save
-      setTimeout(() => {
-        if (state.phase === "idle" && gameRef?.player) {
-          state.event = buildEvent(gameRef.player);
-          state.phase = "join";
-          state.joinEndsAt = now() + JOIN_WINDOW_MS;
-          state.joinedThisRound = false;
-          notify("Drop Party incoming! Join within 30 minutes.");
-          render();
-        }
-      }, 1000);
+      // Keep first round on the same fixed 15-minute cadence as subsequent rounds.
     },
 
     onAfterRender() {

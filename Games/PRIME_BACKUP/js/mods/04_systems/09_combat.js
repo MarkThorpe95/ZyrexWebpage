@@ -2100,6 +2100,34 @@ window.RSGame = window.RSGame || {};
     refreshDuelPanel();
   }
 
+  function isDuelArenaViewActive() {
+    const duelTab = document.querySelector('.tab-btn[data-tab="duel-arena"]');
+    const duelPanel = document.querySelector(".duel-arena-panel");
+    if (!duelTab || !duelPanel) return false;
+    return duelTab.classList.contains("active") && duelPanel.style.display !== "none";
+  }
+
+  function offerInventorySlotToDuel(slotIndex, options = {}) {
+    if (!isDuelArenaViewActive() || isStakeFightActive()) return false;
+    const slots = window.Player?.inventory?.getSlots?.() || window.Player?.inventory?.slots || [];
+    const idx = Number(slotIndex);
+    if (!Number.isInteger(idx) || idx < 0 || idx >= slots.length) return false;
+
+    const slot = slots[idx];
+    if (!slot || slot.id === "coins") return false;
+
+    const live = getInventoryItem(slot.id, slot.noted);
+    const maxAvail = getAvailableStakeQty(slot.id, slot.noted);
+    if (!live || maxAvail <= 0) return false;
+
+    const offerStack = options.offerStack !== false;
+    const desiredQty = offerStack ? Math.max(1, Number(slot.qty) || 1) : 1;
+    const addQty = Math.max(1, Math.min(desiredQty, maxAvail));
+
+    addToStake({ ...live, _slotIndex: idx }, addQty);
+    return true;
+  }
+
   function formatDuelTimer(msRemaining) {
     const totalSeconds = Math.max(0, Math.ceil(msRemaining / 1000));
     const minutes = Math.floor(totalSeconds / 60);
@@ -2478,11 +2506,12 @@ window.RSGame = window.RSGame || {};
         }
         cell.title = slot.name + (slot.noted ? " (noted)" : "");
 
-        // Left click: add 1
-        if (!duelActive) cell.addEventListener("click", () => {
+        // Left click: add 1 (Shift+Click adds clicked stack)
+        if (!duelActive) cell.addEventListener("click", (e) => {
           const live = getInventoryItem(slot.id, slot.noted);
           if (!live || getAvailableStakeQty(slot.id, slot.noted) <= 0) return;
-          addToStake({ ...live, _slotIndex: i }, 1);
+          const qty = e.shiftKey ? Math.max(1, Number(slot.qty) || 1) : 1;
+          addToStake({ ...live, _slotIndex: i }, qty);
         });
 
         // Right click: context menu
@@ -2617,7 +2646,7 @@ window.RSGame = window.RSGame || {};
           <div class="duel-col">
             <div class="duel-col-label">Your Inventory</div>
             <div class="stake-inv-grid" id="stake-inv-grid"></div>
-            <div class="stake-help-text">Left click offers 1 item. Right click offers 1, 10, 100, X, or All. Use the coin stack for gp offers.</div>
+            <div class="stake-help-text">Left click offers 1 item. Shift+Click offers the clicked stack. Right click offers 1, 10, 100, X, or All. Use the coin stack for gp offers.</div>
           </div>
 
           <!-- Your offer -->
@@ -2721,7 +2750,8 @@ window.RSGame = window.RSGame || {};
   RSGame.Combat = {
     ...(RSGame.Combat || {}),
     getMonsterById,
-    simulateBossKillsToBank
+    simulateBossKillsToBank,
+    offerInventorySlotToDuel
   };
 
   RSGame.Game.registerMod({

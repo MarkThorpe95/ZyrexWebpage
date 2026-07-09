@@ -242,8 +242,10 @@ Pets
 Drop Party
 - File: js/mods/05_features/18_drop_party.js
 - Creates drop-party tab/panel.
-- Gated by Player.funMode and the Dev Menu INSTA DP toggle.
-- Key phases: idle, join, awaitingClaim, cooldown.
+- Runs on a fixed 15-minute round cadence.
+- Key phases: idle, join.
+- Join window: 1 minute per round.
+- Pending rewards no longer block new rounds; unclaimed rewards auto-deposit after 5 minutes.
 - Test flow: Start Test Drop Party Now -> Join Drop Party -> wait for timer -> result panel -> Deposit to Bank.
 - Uses GE price cache to build the reward pool.
 

@@ -44,7 +44,7 @@
         id: "coins",
         name: "Coins",
         icon: osrsIcon("Coins_10000.png"),
-        qty: 1500000
+        qty: 150000
       });
 
       game.player.starterPackGranted = true;

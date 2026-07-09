@@ -762,7 +762,12 @@ window.RSGame = window.RSGame || {};
         RSGame.Game?.saveNow?.();
       });
 
-      el.addEventListener("click", () => {
+      el.addEventListener("click", (e) => {
+        if (e.shiftKey) {
+          const movedToDuel = window.RSGame?.Combat?.offerInventorySlotToDuel?.(index, { offerStack: true });
+          if (movedToDuel) return;
+        }
+
         if (!slot || slot.itemType !== "Equipment" || !slot.slot) return;
         const slotName = String(slot.slot).toLowerCase();
         if (!player.equipment.slots.hasOwnProperty(slotName)) return;

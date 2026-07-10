@@ -8,6 +8,9 @@ window.RSGame = window.RSGame || {};
   const GE_CACHE_TTL_MS = 4 * 60 * 60 * 1000;
   const SEARCH_DEBOUNCE_MS = 600;
   const FILL_TICK_MS = 2000;
+  const COINS_PER_PLAT_TOKEN = 1000;
+  const PLAT_TOKENS_PER_DIVINE_TOKEN = 100_000;
+  const COINS_PER_DIVINE_TOKEN = 1_000_000_000;
 
   const GE_MAPPING_URL = "https://prices.runescape.wiki/api/v1/osrs/mapping";
   const GE_LATEST_URL = "https://prices.runescape.wiki/api/v1/osrs/latest";
@@ -237,6 +240,13 @@ window.RSGame = window.RSGame || {};
     return getTotalQty(inventory, "coins");
   }
 
+  function getWalletValue(inventory) {
+    const coins = getCoins(inventory);
+    const tokens = getTotalQty(inventory, "platinum_token");
+    const divine = getTotalQty(inventory, "divine_token");
+    return coins + tokens * COINS_PER_PLAT_TOKEN + divine * COINS_PER_DIVINE_TOKEN;
+  }
+
   function addCoins(inventory, qty) {
     const amount = Math.max(0, Number(qty) || 0);
     if (!amount) return true;
@@ -251,9 +261,6 @@ window.RSGame = window.RSGame || {};
 
   function removeCoinsAndTokens(inventory, qty) {
     // Remove a combined amount from coins, platinum tokens, and divine tokens. Returns true if successful.
-    const COINS_PER_PLAT_TOKEN = 1000;
-    const PLAT_TOKENS_PER_DIVINE_TOKEN = 100_000; // 100,000 platinum tokens
-    const COINS_PER_DIVINE_TOKEN = 1_000_000_000; // 1 billion coins
     let amount = Math.max(0, Number(qty) || 0);
     let coins = getTotalQty(inventory, "coins");
     let tokens = getTotalQty(inventory, "platinum_token");
@@ -771,25 +778,18 @@ window.RSGame = window.RSGame || {};
       }
 
       function updateCoinsLabel() {
-        let coins = 0, tokens = 0, divine = 0;
         try {
-          coins = getCoins(game.player.inventory) || 0;
-        } catch (e) { coins = 0; }
-        try {
-          tokens = getTotalQty(game.player.inventory, "platinum_token") || 0;
-        } catch (e) { tokens = 0; }
-        try {
-          divine = getTotalQty(game.player.inventory, "divine_token") || 0;
-        } catch (e) { divine = 0; }
-        const COINS_PER_PLAT_TOKEN = 1000;
-        const PLAT_TOKENS_PER_DIVINE_TOKEN = 1_000_000_000;
-        const COINS_PER_DIVINE_TOKEN = COINS_PER_PLAT_TOKEN * PLAT_TOKENS_PER_DIVINE_TOKEN;
-        let totalValue = 0;
-        try {
-          totalValue = coins + tokens * COINS_PER_PLAT_TOKEN + divine * COINS_PER_DIVINE_TOKEN;
-        } catch (e) { totalValue = 0; }
-        if (!isFinite(totalValue) || isNaN(totalValue)) totalValue = 0;
-        coinsEl.textContent = formatCompactQty(totalValue) + " gp";
+          const totalValue = getWalletValue(game.player.inventory);
+          if (!isFinite(totalValue) || isNaN(totalValue)) {
+            coinsEl.textContent = "0 gp";
+            return;
+          }
+          coinsEl.textContent = formatCompactQty(totalValue) + " gp";
+          return;
+        } catch (e) {
+          coinsEl.textContent = "0 gp";
+          return;
+        }
       }
 
       function updateCacheAgeStatus(result) {
@@ -1613,13 +1613,7 @@ window.RSGame = window.RSGame || {};
                 price = Math.max(1, Number(preview.price) || 1);
               }
               // Calculate total gp (coins + platinum tokens + divine tokens)
-              const COINS_PER_PLAT_TOKEN = 1000;
-              const PLAT_TOKENS_PER_DIVINE_TOKEN = 1_000_000_000_000;
-              const COINS_PER_DIVINE_TOKEN = COINS_PER_PLAT_TOKEN * PLAT_TOKENS_PER_DIVINE_TOKEN;
-              const coins = getCoins(game.player.inventory);
-              const tokens = getTotalQty(game.player.inventory, "platinum_token");
-              const divine = getTotalQty(game.player.inventory, "divine_token");
-              const totalValue = coins + tokens * COINS_PER_PLAT_TOKEN + divine * COINS_PER_DIVINE_TOKEN;
+              const totalValue = getWalletValue(game.player.inventory);
               const maxQty = price > 0 ? Math.floor(totalValue / price) : 0;
               qtyInput.value = maxQty > 0 ? maxQty : 1;
             }

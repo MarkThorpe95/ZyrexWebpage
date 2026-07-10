@@ -705,11 +705,63 @@ window.RSGame = window.RSGame || {};
         return Math.max(0, Number(match?.price) || 0);
       }
 
+      function resolveSharedGeItem(idOrName) {
+        const raw = String(idOrName || "").trim();
+        if (!raw) return null;
+
+        const byId = getSharedGeItems().find((item) => String(item?.id) === raw);
+        if (byId) return byId;
+
+        const normalized = normalizeLookupName(raw);
+        if (!normalized) return null;
+        return getSharedGeItems().find((item) => normalizeLookupName(item?.name) === normalized) || null;
+      }
+
+      function grantInstantBuyFill(player, idOrName, qty, options) {
+        const geItem = resolveSharedGeItem(idOrName);
+        if (!geItem) {
+          return { ok: false, reason: "not_found" };
+        }
+
+        const amount = Math.max(1, Number(qty) || 1);
+        const opts = options || {};
+        const canonicalName = geItem.name || String(idOrName || "");
+        const inventoryItemId = String(opts.inventoryItemId || inferLocalItemIdFromName(canonicalName) || geItem.id);
+
+        const destination = claimToInventoryOrBank(player, {
+          id: inventoryItemId,
+          name: canonicalName,
+          icon: geItem.icon || null,
+          stackable: typeof opts.stackable === "boolean" ? opts.stackable : !!geItem.limit,
+          slot: opts.slot || null,
+          bonuses: opts.bonuses || null,
+          itemType: opts.itemType || null,
+          leftClickAction: opts.leftClickAction || null,
+          rightClickActions: Array.isArray(opts.rightClickActions) ? opts.rightClickActions.slice() : null
+        }, amount, !!opts.noted);
+
+        return {
+          ok: true,
+          destination,
+          item: {
+            id: inventoryItemId,
+            name: canonicalName,
+            icon: geItem.icon || null,
+            osrsId: geItem.id
+          }
+        };
+      }
+
       function publishGeApi() {
         window.RSGame = window.RSGame || {};
         window.RSGame.GE = {
           ...(window.RSGame.GE || {}),
           getItems: () => getSharedGeItems().slice(),
+          resolveItem: (idOrName) => {
+            const item = resolveSharedGeItem(idOrName);
+            return item ? { ...item } : null;
+          },
+          grantInstantBuyFill: (player, idOrName, qty, options) => grantInstantBuyFill(player, idOrName, qty, options),
           getCachedPriceById: (id) => getSharedGePriceById(id),
           getCachedPriceByName: (name) => getSharedGePriceByName(name),
           getCachedPrice: (idOrName, maybeName) => {

@@ -16,29 +16,12 @@ window.RSGame = window.RSGame || {};
     return { id, name, qty, icon, stackable };
   }
 
-  function inferLocalItemIdFromName(name) {
-    return String(name || "")
-      .toLowerCase()
-      .replace(/'/g, "")
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "");
-  }
-
-  function normalizeLookupName(value) {
-    return String(value || "")
-      .toLowerCase()
-      .replace(/[_-]+/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  function buildGeReward(name, qty, fallbackIcon, stackable = false, fallbackId) {
+  function buildGeReward(name, qty, stackable = false, fallbackId) {
     return {
       geName: name,
       qty,
-      fallbackIcon,
       stackable,
-      fallbackId: fallbackId || inferLocalItemIdFromName(name)
+      fallbackId: fallbackId || null
     };
   }
 
@@ -47,7 +30,7 @@ window.RSGame = window.RSGame || {};
       label: "Juniper",
       description: "1x Old School Bond + 50m coins",
       rewards: [
-        buildGeReward("Old School Bond", 1, wikiIcon("Old_School_Bond.png"), false, "bond"),
+        buildGeReward("Old School Bond", 1, false, "bond"),
         buildReward("coins", "Coins", 50_000_000, wikiIcon("Coins_10000.png"), true)
       ]
     },
@@ -55,42 +38,42 @@ window.RSGame = window.RSGame || {};
       label: "AgedClue",
       description: "3a melee, range and mage sets, 3rd age weapons, ring, and druidic gear",
       rewards: [
-        buildGeReward("3rd age full helmet", 1, wikiIcon("3rd_age_full_helmet.png"), false, "3rd_age_full_helmet"),
-        buildGeReward("3rd age platebody", 1, wikiIcon("3rd_age_platebody.png"), false, "3rd_age_platebody"),
-        buildGeReward("3rd age platelegs", 1, wikiIcon("3rd_age_platelegs.png"), false, "3rd_age_platelegs"),
-        buildGeReward("3rd age longsword", 1, wikiIcon("3rd_age_longsword.png"), false, "third_age_longsword"),
-        buildGeReward("3rd age range top", 1, wikiIcon("3rd_age_range_top.png"), false, "third_age_range_top"),
-        buildGeReward("3rd age range legs", 1, wikiIcon("3rd_age_range_legs.png"), false, "third_age_range_legs"),
-        buildGeReward("3rd age bow", 1, wikiIcon("3rd_age_bow.png"), false, "third_age_bow"),
-        buildGeReward("3rd age robe top", 1, wikiIcon("3rd_age_robe_top.png"), false, "third_age_robe_top"),
-        buildGeReward("3rd age robe", 1, wikiIcon("3rd_age_robe.png"), false, "third_age_robe"),
-        buildGeReward("3rd age mage hat", 1, wikiIcon("3rd_age_mage_hat.png"), false, "third_age_mage_hat"),
-        buildGeReward("3rd age wand", 1, wikiIcon("3rd_age_wand.png"), false, "third_age_wand"),
-        buildGeReward("Ring of 3rd age", 1, wikiIcon("Ring_of_3rd_age.png"), false, "ring_of_3rd_age"),
-        buildGeReward("Druidic wreath", 1, wikiIcon("Druidic_wreath.png"), false, "druidic_wreath"),
-        buildGeReward("Druidic robe top", 1, wikiIcon("Druidic_robe_top.png"), false, "druidic_robe_top"),
-        buildGeReward("Druidic robe bottoms", 1, wikiIcon("Druidic_robe_bottoms.png"), false, "druidic_robe_bottoms"),
-        buildGeReward("Druidic cloak", 1, wikiIcon("Druidic_cloak.png"), false, "druidic_cloak"),
-        buildGeReward("Druidic staff", 1, wikiIcon("Druidic_staff.png"), false, "druidic_staff")
+        buildGeReward("3rd age full helmet", 1, false, "3rd_age_full_helmet"),
+        buildGeReward("3rd age platebody", 1, false, "3rd_age_platebody"),
+        buildGeReward("3rd age platelegs", 1, false, "3rd_age_platelegs"),
+        buildGeReward("3rd age longsword", 1, false, "third_age_longsword"),
+        buildGeReward("3rd age range top", 1, false, "third_age_range_top"),
+        buildGeReward("3rd age range legs", 1, false, "third_age_range_legs"),
+        buildGeReward("3rd age bow", 1, false, "third_age_bow"),
+        buildGeReward("3rd age robe top", 1, false, "third_age_robe_top"),
+        buildGeReward("3rd age robe", 1, false, "third_age_robe"),
+        buildGeReward("3rd age mage hat", 1, false, "third_age_mage_hat"),
+        buildGeReward("3rd age wand", 1, false, "third_age_wand"),
+        buildGeReward("Ring of 3rd age", 1, false, "ring_of_3rd_age"),
+        buildGeReward("Druidic wreath", 1, false, "druidic_wreath"),
+        buildGeReward("Druidic robe top", 1, false, "druidic_robe_top"),
+        buildGeReward("Druidic robe bottoms", 1, false, "druidic_robe_bottoms"),
+        buildGeReward("Druidic cloak", 1, false, "druidic_cloak"),
+        buildGeReward("Druidic staff", 1, false, "druidic_staff")
       ]
     },
     dansisland: {
       label: "DansIsland",
       description: "All partyhats, all h'ween masks, Santa hat, Disk of returning, Easter egg, Pumpkin, and 1000m platinum tokens",
       rewards: [
-        buildGeReward("Red partyhat", 1, wikiIcon("Partyhat_(red).png"), false, "partyhat_red"),
-        buildGeReward("Blue partyhat", 1, wikiIcon("Partyhat_(blue).png"), false, "partyhat_blue"),
-        buildGeReward("Green partyhat", 1, wikiIcon("Partyhat_(green).png"), false, "partyhat_green"),
-        buildGeReward("Yellow partyhat", 1, wikiIcon("Partyhat_(yellow).png"), false, "partyhat_yellow"),
-        buildGeReward("Purple partyhat", 1, wikiIcon("Partyhat_(purple).png"), false, "partyhat_purple"),
-        buildGeReward("White partyhat", 1, wikiIcon("Partyhat_(white).png"), false, "partyhat_white"),
-        buildGeReward("Red h'ween mask", 1, wikiIcon("H'ween_mask_(red).png"), false, "hween_mask_red"),
-        buildGeReward("Blue h'ween mask", 1, wikiIcon("H'ween_mask_(blue).png"), false, "hween_mask_blue"),
-        buildGeReward("Green h'ween mask", 1, wikiIcon("H'ween_mask_(green).png"), false, "hween_mask_green"),
-        buildGeReward("Santa hat", 1, wikiIcon("Santa_hat.png"), false, "santa_hat"),
-        buildGeReward("Disk of returning", 1, wikiIcon("Disk_of_returning.png"), false, "disk_of_returning"),
-        buildGeReward("Easter egg", 1, wikiIcon("Easter_egg.png"), false, "easter_egg"),
-        buildGeReward("Pumpkin", 1, wikiIcon("Pumpkin.png"), false, "pumpkin"),
+        buildGeReward("Red partyhat", 1, false, "partyhat_red"),
+        buildGeReward("Blue partyhat", 1, false, "partyhat_blue"),
+        buildGeReward("Green partyhat", 1, false, "partyhat_green"),
+        buildGeReward("Yellow partyhat", 1, false, "partyhat_yellow"),
+        buildGeReward("Purple partyhat", 1, false, "partyhat_purple"),
+        buildGeReward("White partyhat", 1, false, "partyhat_white"),
+        buildGeReward("Red h'ween mask", 1, false, "hween_mask_red"),
+        buildGeReward("Blue h'ween mask", 1, false, "hween_mask_blue"),
+        buildGeReward("Green h'ween mask", 1, false, "hween_mask_green"),
+        buildGeReward("Santa hat", 1, false, "santa_hat"),
+        buildGeReward("Disk of returning", 1, false, "disk_of_returning"),
+        buildGeReward("Easter egg", 1, false, "easter_egg"),
+        buildGeReward("Pumpkin", 1, false, "pumpkin"),
         buildReward("platinum_token", "Platinum token", 1_000_000_000, wikiIcon("Platinum_token_detail.png"), true)
       ]
     }
@@ -101,44 +84,34 @@ window.RSGame = window.RSGame || {};
   }
 
   function grantRewards(player, rewards) {
-    const geItems = window.RSGame?.GE?.getItems?.() || [];
-    const byName = new Map((Array.isArray(geItems) ? geItems : []).map((item) => [normalizeLookupName(item?.name), item]));
-
-    function resolveReward(reward) {
-      if (!reward) return null;
-      if (reward.geName) {
-        const geMatch = byName.get(normalizeLookupName(reward.geName));
-        const geName = geMatch?.name || reward.geName;
-        const geId = geMatch?.id;
-        const inferredId = reward.fallbackId || inferLocalItemIdFromName(geName);
-        const geIcon = geMatch?.icon || null;
-        const geIconFile = geMatch?.iconFile ? wikiIcon(geMatch.iconFile) : null;
-        return {
-          id: inferredId,
-          name: geName,
-          qty: reward.qty,
-          icon: geIcon || geIconFile || reward.fallbackIcon || null,
-          stackable: !!reward.stackable,
-          osrsId: geId || null
-        };
-      }
-      return reward;
-    }
-
     let granted = 0;
     let failed = 0;
 
     (rewards || []).forEach((reward) => {
-      const resolved = resolveReward(reward);
-      if (!resolved || !resolved.id || !resolved.name) return;
-      const qty = Math.max(1, Number(resolved.qty) || 1);
+      if (!reward) return;
+      const qty = Math.max(1, Number(reward.qty) || 1);
+
+      if (reward.geName && window.RSGame?.GE?.grantInstantBuyFill) {
+        const geGrant = window.RSGame.GE.grantInstantBuyFill(player, reward.geName, qty, {
+          inventoryItemId: reward.fallbackId || null,
+          stackable: !!reward.stackable
+        });
+        if (geGrant?.ok) granted += 1;
+        else failed += 1;
+        return;
+      }
+
+      if (!reward.id || !reward.name) {
+        failed += 1;
+        return;
+      }
+
       const ok = player?.inventory?.addItem?.({
-        id: resolved.id,
-        name: resolved.name,
+        id: reward.id,
+        name: reward.name,
         qty,
-        icon: resolved.icon,
-        stackable: !!resolved.stackable,
-        osrsId: resolved.osrsId
+        icon: reward.icon,
+        stackable: !!reward.stackable
       });
       if (ok) granted += 1;
       else failed += 1;

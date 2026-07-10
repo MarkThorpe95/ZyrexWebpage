@@ -34,7 +34,6 @@
         n.style.zIndex = 9999;
         n.style.boxShadow = '0 2px 12px #0008';
         document.body.appendChild(n);
-          "Mining": 0
       n.textContent = msg;
       n.style.display = 'block';
       clearTimeout(n._hideTimer);

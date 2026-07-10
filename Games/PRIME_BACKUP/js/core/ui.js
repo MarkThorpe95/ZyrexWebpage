@@ -634,7 +634,7 @@ window.RSGame = window.RSGame || {};
     "drop-party",
     "slayer",
     "combat",
-    "zones",
+    "codes",
     "gathering",
     "ge",
     "pets"

@@ -2100,6 +2100,35 @@ window.RSGame = window.RSGame || {};
     refreshDuelPanel();
   }
 
+  function returnStakeItemsToPlayer() {
+    const player = window.Player;
+    if (!player?.inventory || !Array.isArray(stakeOffer) || !stakeOffer.length) return;
+
+    stakeOffer.forEach((entry) => {
+      if (!entry || !entry.id) return;
+      const qty = Math.max(0, Number(entry.qty) || 0);
+      if (qty <= 0) return;
+
+      const item = {
+        id: entry.id,
+        name: entry.name || entry.id,
+        qty,
+        icon: entry.icon || "",
+        noted: !!entry.noted
+      };
+
+      const restored = player.inventory.addItem(item);
+      if (!restored && window.RSGame?.Bank?.addToBank) {
+        window.RSGame.Bank.addToBank(player, {
+          id: item.id,
+          name: item.name,
+          icon: item.icon,
+          category: "Duel Arena"
+        }, qty);
+      }
+    });
+  }
+
   function isDuelArenaViewActive() {
     const duelTab = document.querySelector('.tab-btn[data-tab="duel-arena"]');
     const duelPanel = document.querySelector(".duel-arena-panel");
@@ -2714,6 +2743,7 @@ window.RSGame = window.RSGame || {};
     panel.querySelector("#stake-cancel-btn").addEventListener("click", () => {
       if (isStakeFightActive()) return;
       clearResolvedDuelPreview();
+      returnStakeItemsToPlayer();
       stakeOffer = [];
       stakeCoins = 0;
       clearOpponentOfferState();

@@ -75,6 +75,11 @@ window.RSGame = window.RSGame || {};
     }
   }
 
+  function isDevUnlocked() {
+    if (typeof sessionStorage === "undefined") return false;
+    return sessionStorage.getItem("rsgame.devUnlocked.v1") === "1";
+  }
+
   function getGePrice(itemId, name) {
     const byId = Number(window.RSGame?.GE?.getCachedPriceById?.(itemId)) || 0;
     if (byId > 0) return byId;
@@ -526,10 +531,14 @@ window.RSGame = window.RSGame || {};
       const t = now();
       state.event = buildEvent(gameRef.player);
       state.event.testMode = true;
-      state.phase = "join";
-      state.joinEndsAt = t + JOIN_WINDOW_MS;
-      state.joinedThisRound = false;
-      notify("Drop Party test round started instantly.");
+      const result = simulateJoinOutcome(gameRef.player, state.event, { forceReward: true });
+      state.phase = "idle";
+      state.joinEndsAt = t;
+      state.joinedThisRound = true;
+      showResultPanel(result);
+      state.event = null;
+      state.nextAt = t + ROUND_INTERVAL_MS;
+      notify("Drop Party test round resolved instantly.");
       render();
     });
 
@@ -587,15 +596,20 @@ window.RSGame = window.RSGame || {};
     const joinBtn = panel.querySelector("#drop-party-join");
     const openPendingBtn = panel.querySelector("#drop-party-open-pending");
 
-    // Always enabled: remove dev menu dependency and messages
+    const devMode = isDevUnlocked();
 
-    // Remove the Generate Drop Party! button from UI
     if (startNowBtn) {
-      startNowBtn.hidden = true;
+      startNowBtn.hidden = !devMode;
+      startNowBtn.disabled = !devMode;
+      startNowBtn.textContent = devMode ? "Start Test Drop Party Now" : "Generate Drop Party!";
     }
 
     if (openPendingBtn) {
       openPendingBtn.hidden = !state.pendingReward;
+    }
+
+    if (statusEl && devMode && !state.pendingReward && state.phase === "idle") {
+      statusEl.textContent = "Dev test mode available. Start an instant drop party round.";
     }
 
     if (state.phase === "join" && state.event) {
@@ -628,7 +642,7 @@ window.RSGame = window.RSGame || {};
     renderLootPreview([]);
     if (joinBtn) {
       joinBtn.disabled = true;
-      joinBtn.textContent = "Join Drop Party";
+      joinBtn.textContent = state.pendingReward ? "Joined" : "Join Drop Party";
     }
   }
 

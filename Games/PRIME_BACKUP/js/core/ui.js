@@ -34,7 +34,7 @@
         n.style.zIndex = 9999;
         n.style.boxShadow = '0 2px 12px #0008';
         document.body.appendChild(n);
-      }
+          "Mining": 0
       n.textContent = msg;
       n.style.display = 'block';
       clearTimeout(n._hideTimer);
@@ -421,7 +421,8 @@ window.RSGame = window.RSGame || {};
       "Crush Defence": 0,
       "Ranged Defence": 0,
       "Magic Defence": 0,
-      "Prayer": 0
+      "Prayer": 0,
+      "Mining": 0
     };
   }
 
@@ -1034,6 +1035,7 @@ window.RSGame = window.RSGame || {};
 
       html += '<div class="stats-section"><h3>Other</h3>';
       html += `<div class="stat-row"><span>Prayer:</span> <span class="stat-value">${stats["Prayer"] > 0 ? '+' : ''}${stats["Prayer"]}</span></div>`;
+      html += `<div class="stat-row"><span>Mining:</span> <span class="stat-value">${stats["Mining"] > 0 ? '+' : ''}${stats["Mining"]}</span></div>`;
       html += '</div>';
       html += '</div>';
 

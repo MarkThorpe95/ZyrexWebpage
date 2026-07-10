@@ -531,14 +531,11 @@ window.RSGame = window.RSGame || {};
       const t = now();
       state.event = buildEvent(gameRef.player);
       state.event.testMode = true;
-      const result = simulateJoinOutcome(gameRef.player, state.event, { forceReward: true });
-      state.phase = "idle";
-      state.joinEndsAt = t;
+      state.phase = "join";
+      state.joinEndsAt = t + JOIN_AFTER_PLAYER_MS;
       state.joinedThisRound = true;
-      showResultPanel(result);
-      state.event = null;
       state.nextAt = t + ROUND_INTERVAL_MS;
-      notify("Drop Party test round resolved instantly.");
+      notify("Drop Party test round started instantly.");
       render();
     });
 
@@ -608,10 +605,6 @@ window.RSGame = window.RSGame || {};
       openPendingBtn.hidden = !state.pendingReward;
     }
 
-    if (statusEl && devMode && !state.pendingReward && state.phase === "idle") {
-      statusEl.textContent = "Dev test mode available. Start an instant drop party round.";
-    }
-
     if (state.phase === "join" && state.event) {
       const left = Math.max(0, state.joinEndsAt - now());
       if (statusEl) statusEl.textContent = "Drop Party active. Loot rolls in: " + formatMs(left);
@@ -635,6 +628,9 @@ window.RSGame = window.RSGame || {};
     if (state.pendingReward) {
       if (statusEl) statusEl.textContent = "Claim pending. Next drop party in: " + formatMs(untilNext);
       if (metaEl) metaEl.innerHTML = "<div>Your loot can be deposited now or will auto-deposit in 5 minutes.</div>";
+    } else if (devMode) {
+      if (statusEl) statusEl.textContent = "Dev test mode available. Start an instant drop party round.";
+      if (metaEl) metaEl.innerHTML = "<div>Drop parties run every 15 minutes.</div>";
     } else {
       if (statusEl) statusEl.textContent = "Next drop party in: " + formatMs(untilNext);
       if (metaEl) metaEl.innerHTML = "<div>Drop parties run every 15 minutes.</div>";

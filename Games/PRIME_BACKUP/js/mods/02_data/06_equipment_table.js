@@ -328,6 +328,12 @@ window.RSGame = window.RSGame || {};
       bonuses: { Stab: 10, Slash: 10, Crush: 18, "Melee Strength": 0, Mining: 10 },
       requirements: { Mining: 75 },
       icon: "https://oldschool.runescape.wiki/images/thumb/3rd_age_pickaxe_detail.png/32px-3rd_age_pickaxe_detail.png"
+    },
+    "3rd_age_pickaxe": {
+      slot: "weapon",
+      bonuses: { Stab: 10, Slash: 10, Crush: 18, "Melee Strength": 0, Mining: 10 },
+      requirements: { Mining: 75 },
+      icon: "https://oldschool.runescape.wiki/images/thumb/3rd_age_pickaxe_detail.png/32px-3rd_age_pickaxe_detail.png"
     }
   };
 

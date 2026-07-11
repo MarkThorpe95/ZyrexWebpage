@@ -470,6 +470,24 @@ window.RSGame = window.RSGame || {};
     return String(n);
   }
 
+  function formatShortGeValue(n) {
+    const value = Math.max(0, Number(n) || 0);
+    if (value >= 1e12) return (value / 1e12).toFixed(value >= 1e13 ? 0 : 1).replace(/\.0$/, "") + "t";
+    if (value >= 1e9) return (value / 1e9).toFixed(value >= 1e10 ? 0 : 1).replace(/\.0$/, "") + "b";
+    if (value >= 1e6) return (value / 1e6).toFixed(value >= 1e7 ? 0 : 1).replace(/\.0$/, "") + "m";
+    if (value >= 1e3) return (value / 1e3).toFixed(value >= 1e4 ? 0 : 1).replace(/\.0$/, "") + "k";
+    return String(Math.round(value));
+  }
+
+  function getDefaultGeValue(itemLike) {
+    if (!itemLike) return 1;
+    const byId = getGePriceById(itemLike.id);
+    if (byId > 0) return byId;
+    const byName = getGePriceByName(itemLike.name || itemLike.id);
+    if (byName > 0) return byName;
+    return resolveOfferItemValue(itemLike);
+  }
+
   function normalizeTaskName(value) {
     return String(value || "")
       .toLowerCase()
@@ -2533,7 +2551,8 @@ window.RSGame = window.RSGame || {};
           }
           cell.appendChild(qtyTag);
         }
-        cell.title = slot.name + (slot.noted ? " (noted)" : "");
+        const geUnitValue = getDefaultGeValue(slot);
+        cell.title = `${slot.name}${slot.noted ? " (noted)" : ""}\nG.E: ${formatShortGeValue(geUnitValue)} gp`;
 
         // Left click: add 1 (Shift+Click adds clicked stack)
         if (!duelActive) cell.addEventListener("click", (e) => {
@@ -2567,7 +2586,7 @@ window.RSGame = window.RSGame || {};
           <img src="https://oldschool.runescape.wiki/images/thumb/Coins_10000.png/32px-Coins_10000.png" alt="Coins" />
           <span class="stake-inv-qty">${formatNum(slot.qty)}</span>
         `;
-        cell.title = "Coins";
+        cell.title = `Coins\nG.E: ${formatShortGeValue(getDefaultGeValue(slot))} gp`;
         if (!duelActive) cell.addEventListener("click", () => {
           const val = prompt("How many coins to offer? (e.g., 1000, 1k, 1m, 1b) Max " + formatNum(slot.qty));
           const n = parseCoinAmount(val);

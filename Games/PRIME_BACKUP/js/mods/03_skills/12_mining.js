@@ -40,7 +40,8 @@
     rune_pickaxe: 1.46,
     dragon_pickaxe: 1.58,
     crystal_pickaxe: 1.66,
-    third_age_pickaxe: 1.7
+    third_age_pickaxe: 1.7,
+    "3rd_age_pickaxe": 1.7
   };
 
   const GEM_TABLE = [

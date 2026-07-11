@@ -149,6 +149,61 @@ window.RSGame = window.RSGame || {};
     };
   }
 
+  function getPlayerCoins(player) {
+    const slots = player?.inventory?.getSlots?.() || player?.inventory?.slots || [];
+    const coinSlot = slots.find((slot) => slot && slot.id === "coins");
+    return Math.max(0, Number(coinSlot?.qty) || 0);
+  }
+
+  function renderUpgradeEffectText(row) {
+    if (!row) return "";
+    if (row.effectUnit === "percent") return `+${row.effectValue}%`;
+    if (row.effectUnit === "tier") return `Tier ${row.effectValue}`;
+    return `+${row.effectValue}`;
+  }
+
+  function refreshUpgradesPanel(panel, game, statusMessage = "") {
+    if (!panel) return;
+    const player = game?.player || window.Player;
+    const combatApi = window.RSGame?.Combat;
+
+    const statusEl = panel.querySelector("#upgrades-status");
+    const coinsEl = panel.querySelector("#upgrades-coins");
+    const listEl = panel.querySelector("#upgrades-list");
+
+    if (coinsEl) {
+      coinsEl.textContent = `Your gp: ${getPlayerCoins(player).toLocaleString()}`;
+    }
+
+    if (statusEl) {
+      statusEl.textContent = statusMessage || "Spend gp for permanent combat upgrades. Failure consumes gp.";
+      statusEl.classList.toggle("error", /failed|need|unknown|maxed|maxed\.|could not/i.test(statusEl.textContent));
+    }
+
+    if (!listEl) return;
+    const rows = combatApi?.getUpgradeShopRows?.() || [];
+    if (!rows.length) {
+      listEl.innerHTML = '<div class="upgrade-row"><div class="upgrade-meta"><strong>Upgrades unavailable</strong><span>Combat module not ready.</span></div></div>';
+      return;
+    }
+
+    listEl.innerHTML = rows.map((row) => {
+      const chancePct = Math.max(0, Math.min(100, Math.round((Number(row.chance) || 0) * 1000) / 10));
+      const atCap = Number(row.level) >= Number(row.maxLevel);
+      return `
+        <div class="upgrade-row" data-upgrade-key="${row.key}">
+          <div class="upgrade-meta">
+            <strong>${row.label} <span class="upgrade-level">Lv ${row.level}</span></strong>
+            <span>${row.description}</span>
+            <span class="upgrade-effect">Current bonus: ${renderUpgradeEffectText(row)}</span>
+            <span class="upgrade-stats">Chance: ${chancePct}% | Cost: ${Number(row.cost || 0).toLocaleString()} gp</span>
+          </div>
+          <button class="upgrade-buy-btn" type="button" data-upgrade-key="${row.key}" ${atCap ? "disabled" : ""}>${atCap ? "Max" : "Upgrade"}</button>
+        </div>
+      `;
+    }).join("");
+  }
+
   function refreshCodesPanel(panel, game) {
     if (!panel) return;
 
@@ -187,42 +242,66 @@ window.RSGame = window.RSGame || {};
       /* ---------------------------------------------------
          PANELS
       --------------------------------------------------- */
-      const codesPanel = document.createElement("section");
-      codesPanel.className = "panel codes-panel";
-      codesPanel.style.display = "none";
-      codesPanel.innerHTML = `
-        <h2>Codes</h2>
-        <div class="codes-panel-body">
-          <div id="codes-status" class="codes-status"></div>
-          <div id="codes-result" class="codes-result"></div>
-          <div class="codes-redeem-row">
-            <input id="codes-input" class="codes-input" type="text" maxlength="32" placeholder="Enter a secret code" autocomplete="off" />
-            <button id="codes-redeem" type="button" class="codes-redeem-btn">Redeem</button>
-          </div>
-          <div id="codes-list-wrap" class="codes-list-wrap" hidden>
-            <h3>Available Codes</h3>
-            <div id="codes-list" class="codes-list"></div>
-          </div>
-        </div>`;
-      main.appendChild(codesPanel);
+      let codesPanel = main.querySelector(".codes-panel");
+      if (!codesPanel) {
+        codesPanel = document.createElement("section");
+        codesPanel.className = "panel codes-panel";
+        codesPanel.style.display = "none";
+        codesPanel.innerHTML = `
+          <h2>Codes</h2>
+          <div class="codes-panel-body">
+            <div id="codes-status" class="codes-status"></div>
+            <div id="codes-result" class="codes-result"></div>
+            <div class="codes-redeem-row">
+              <input id="codes-input" class="codes-input" type="text" maxlength="32" placeholder="Enter a secret code" autocomplete="off" />
+              <button id="codes-redeem" type="button" class="codes-redeem-btn">Redeem</button>
+            </div>
+            <div id="codes-list-wrap" class="codes-list-wrap" hidden>
+              <h3>Available Codes</h3>
+              <div id="codes-list" class="codes-list"></div>
+            </div>
+          </div>`;
+        main.appendChild(codesPanel);
+      }
 
-      const gatheringPanel = document.createElement("section");
-      gatheringPanel.className = "panel gathering-panel";
-      gatheringPanel.style.display = "none";
-      gatheringPanel.innerHTML = `<h2>Shop</h2>`;
-      main.appendChild(gatheringPanel);
+      let upgradesPanel = main.querySelector(".upgrades-panel");
+      if (!upgradesPanel) {
+        upgradesPanel = document.createElement("section");
+        upgradesPanel.className = "panel upgrades-panel";
+        upgradesPanel.style.display = "none";
+        upgradesPanel.innerHTML = `
+          <h2>Upgrades Shop</h2>
+          <div class="upgrades-panel-body">
+            <div id="upgrades-coins" class="upgrades-coins"></div>
+            <div id="upgrades-status" class="codes-status"></div>
+            <div id="upgrades-list" class="upgrades-list"></div>
+          </div>
+        `;
+        main.appendChild(upgradesPanel);
+      }
+
+      let gatheringPanel = main.querySelector(".gathering-panel");
+      if (!gatheringPanel) {
+        gatheringPanel = document.createElement("section");
+        gatheringPanel.className = "panel gathering-panel";
+        gatheringPanel.style.display = "none";
+        gatheringPanel.innerHTML = `<h2>Shop</h2>`;
+        main.appendChild(gatheringPanel);
+      }
 
       /* ---------------------------------------------------
          TAB BUTTONS
       --------------------------------------------------- */
-      const codesBtn = document.createElement("button");
-      codesBtn.className = "tab-btn";
-      codesBtn.dataset.tab = "codes";
-      codesBtn.innerHTML = `
-        <img class="tab-icon" src="https://oldschool.runescape.wiki/images/Key.png" alt="Codes" onerror="this.onerror=null;this.src='https://oldschool.runescape.wiki/images/Attack_icon_(detail).png';">
-        <span class="tab-label">Codes</span>
-      `;
-      tabBar.appendChild(codesBtn);
+      if (!tabBar.querySelector('.tab-btn[data-tab="upgrades"]')) {
+        const upgradesBtn = document.createElement("button");
+        upgradesBtn.className = "tab-btn";
+        upgradesBtn.dataset.tab = "upgrades";
+        upgradesBtn.innerHTML = `
+          <img class="tab-icon" src="https://oldschool.runescape.wiki/images/thumb/Coins_10000.png/32px-Coins_10000.png" alt="Upgrades" onerror="this.onerror=null;this.src='https://oldschool.runescape.wiki/images/Attack_icon_(detail).png';">
+          <span class="tab-label">Upgrades</span>
+        `;
+        tabBar.appendChild(upgradesBtn);
+      }
 
       const redeemHandler = () => {
         const inputEl = codesPanel.querySelector("#codes-input");
@@ -241,12 +320,23 @@ window.RSGame = window.RSGame || {};
         if (e.key === "Enter") redeemHandler();
       });
 
+      upgradesPanel.querySelector("#upgrades-list")?.addEventListener("click", (e) => {
+        const btn = e.target.closest?.(".upgrade-buy-btn");
+        if (!btn) return;
+        const key = btn.getAttribute("data-upgrade-key");
+        const result = window.RSGame?.Combat?.purchaseUpgrade?.(key);
+        refreshUpgradesPanel(upgradesPanel, game, result?.message || "Upgrade unavailable.");
+      });
+
       refreshCodesPanel(codesPanel, game);
+      refreshUpgradesPanel(upgradesPanel, game);
     },
 
     onAfterRender(game) {
       const codesPanel = document.querySelector(".codes-panel");
+      const upgradesPanel = document.querySelector(".upgrades-panel");
       refreshCodesPanel(codesPanel, game);
+      refreshUpgradesPanel(upgradesPanel, game);
     }
   });
 

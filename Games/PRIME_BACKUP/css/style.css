@@ -4492,6 +4492,82 @@ body {
   border-bottom: none;
 }
 
+.upgrades-panel-body {
+  display: grid;
+  gap: 10px;
+}
+
+.upgrades-coins {
+  color: #e8c97e;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.upgrades-list {
+  display: grid;
+  gap: 8px;
+}
+
+.upgrade-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #4f4323;
+  border-radius: 8px;
+  background: #1a1610;
+}
+
+.upgrade-meta {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.upgrade-meta strong {
+  color: #f6e1a6;
+  font-size: 13px;
+}
+
+.upgrade-level {
+  color: #bca168;
+  font-size: 11px;
+}
+
+.upgrade-meta span {
+  color: #d2c7ae;
+  font-size: 11px;
+}
+
+.upgrade-effect {
+  color: #98d888 !important;
+}
+
+.upgrade-stats {
+  color: #a3c7ff !important;
+}
+
+.upgrade-buy-btn {
+  flex: 0 0 auto;
+  border: 1px solid #6a5a2f;
+  background: #2a2213;
+  color: #f0d48e;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.upgrade-buy-btn:hover:not(:disabled) {
+  background: #3a2f19;
+}
+
+.upgrade-buy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ============================================================
    FLETCHING PANEL
 ============================================================ */

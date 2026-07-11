@@ -769,11 +769,13 @@ window.RSGame = window.RSGame || {};
           if (movedToDuel) return;
         }
 
-        if (!slot || slot.itemType !== "Equipment" || !slot.slot) return;
-        const slotName = String(slot.slot).toLowerCase();
+        const liveSlot = player.inventory?.getSlots?.()?.[index] || player.inventory?.slots?.[index] || null;
+        if (!liveSlot || liveSlot.itemType !== "Equipment" || !liveSlot.slot) return;
+
+        const slotName = String(liveSlot.slot).toLowerCase();
         if (!player.equipment.slots.hasOwnProperty(slotName)) return;
 
-        const requirements = slot.requirements || null;
+        const requirements = liveSlot.requirements || null;
         if (requirements) {
           const unmet = Object.entries(requirements).filter(([skillName, requiredLevel]) => {
             const currentLevel = Number(player?.skills?.[skillName]?.level || 0);
@@ -781,7 +783,7 @@ window.RSGame = window.RSGame || {};
           });
           if (unmet.length) {
             const message = unmet.map(([skillName, requiredLevel]) => `${skillName} ${requiredLevel}`).join(", ");
-            window.showNotification?.(`Requires ${message} to equip ${slot.name || "this item"}.`);
+            window.showNotification?.(`Requires ${message} to equip ${liveSlot.name || "this item"}.`);
             return;
           }
         }
@@ -794,7 +796,7 @@ window.RSGame = window.RSGame || {};
         }
 
         // Equip new
-        player.equipment.equip(slotName, slot);
+        player.equipment.equip(slotName, liveSlot);
         player.inventory.getSlots()[index] = null;
 
         renderInventory(player);
@@ -932,7 +934,8 @@ window.RSGame = window.RSGame || {};
       window.alert(message);
     }
 
-    function tryUnequipToInventoryOrBank(slotName, equippedItem) {
+    function tryUnequipToInventoryOrBank(slotName) {
+      const equippedItem = player.equipment.get(slotName);
       if (!equippedItem) return;
 
       player.equipment.equip(slotName, null);
@@ -978,14 +981,14 @@ window.RSGame = window.RSGame || {};
 
         // Left-click unequip
         slotEl.addEventListener("click", () => {
-          tryUnequipToInventoryOrBank(slotName, item);
+          tryUnequipToInventoryOrBank(slotName);
         });
 
         // Right-click unequip
         slotEl.addEventListener("contextmenu", (e) => {
           e.preventDefault();
           const items = [{ label: "Remove", action: () => {
-            tryUnequipToInventoryOrBank(slotName, item);
+            tryUnequipToInventoryOrBank(slotName);
           }}];
           showEquipContextMenu(e.clientX, e.clientY, items);
         });

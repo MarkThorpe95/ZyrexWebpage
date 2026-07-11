@@ -420,6 +420,74 @@ window.RSGame = window.RSGame || {};
   const SLAYER_MASTER_BY_ID = Object.fromEntries(SLAYER_MASTERS.map((master) => [master.id, master]));
   const SLAYER_MASTER_BY_NAME = Object.fromEntries(SLAYER_MASTERS.map((master) => [master.name, master]));
 
+  const COMBAT_UPGRADE_DEFS = {
+    min_hit: {
+      key: "min_hit",
+      label: "Min Hit",
+      description: "Raises your minimum melee hit.",
+      baseCost: 500000,
+      costScale: 1.42,
+      baseChance: 1,
+      chanceDrop: 0.03,
+      minChance: 0.25,
+      effectPerLevel: 1,
+      maxLevel: 50,
+      effectUnit: "flat"
+    },
+    max_hit: {
+      key: "max_hit",
+      label: "Max Hit",
+      description: "Raises your maximum melee hit.",
+      baseCost: 750000,
+      costScale: 1.45,
+      baseChance: 1,
+      chanceDrop: 0.03,
+      minChance: 0.22,
+      effectPerLevel: 1,
+      maxLevel: 60,
+      effectUnit: "flat"
+    },
+    passive_hp_regen: {
+      key: "passive_hp_regen",
+      label: "Passive HP Regen",
+      description: "Chance to regenerate HP each combat tick.",
+      baseCost: 900000,
+      costScale: 1.5,
+      baseChance: 1,
+      chanceDrop: 0.035,
+      minChance: 0.2,
+      effectPerLevel: 1,
+      maxLevel: 40,
+      effectUnit: "tier"
+    },
+    base_defence_bonus: {
+      key: "base_defence_bonus",
+      label: "Base Defence Bonus",
+      description: "Adds flat base defence in combat calculations.",
+      baseCost: 650000,
+      costScale: 1.44,
+      baseChance: 1,
+      chanceDrop: 0.03,
+      minChance: 0.24,
+      effectPerLevel: 3,
+      maxLevel: 45,
+      effectUnit: "flat"
+    },
+    attack_speed: {
+      key: "attack_speed",
+      label: "Attack Speed",
+      description: "Speeds up combat ticks.",
+      baseCost: 1200000,
+      costScale: 1.52,
+      baseChance: 1,
+      chanceDrop: 0.035,
+      minChance: 0.18,
+      effectPerLevel: 0.02,
+      maxLevel: 25,
+      effectUnit: "percent"
+    }
+  };
+
   /* ==========================================================
      STATE
   ========================================================== */
@@ -672,6 +740,134 @@ window.RSGame = window.RSGame || {};
     const slots = window.Player?.inventory?.getSlots?.() || window.Player?.inventory?.slots || [];
     const c = slots.find(s => s && s.id === "coins");
     return c ? (Number(c.qty) || 0) : 0;
+  }
+
+  function ensureCombatUpgradeState() {
+    if (!combatState) initCombatState();
+    if (!combatState.upgrades || typeof combatState.upgrades !== "object") {
+      combatState.upgrades = {};
+    }
+    Object.keys(COMBAT_UPGRADE_DEFS).forEach((key) => {
+      const level = Number(combatState.upgrades[key]);
+      combatState.upgrades[key] = Number.isFinite(level) ? Math.max(0, Math.floor(level)) : 0;
+    });
+    return combatState.upgrades;
+  }
+
+  function getCombatUpgradeLevel(key) {
+    const upgrades = ensureCombatUpgradeState();
+    return Math.max(0, Number(upgrades[key]) || 0);
+  }
+
+  function getUpgradeSuccessChance(def, level) {
+    return clamp((Number(def.baseChance) || 1) - ((Number(def.chanceDrop) || 0) * level), Number(def.minChance) || 0.1, 1);
+  }
+
+  function getUpgradeCost(def, level) {
+    const cost = (Number(def.baseCost) || 1000) * Math.pow(Number(def.costScale) || 1.25, level);
+    return Math.max(1, Math.round(cost));
+  }
+
+  function getCombatUpgradeEffects() {
+    const minHitLevel = getCombatUpgradeLevel("min_hit");
+    const maxHitLevel = getCombatUpgradeLevel("max_hit");
+    const regenLevel = getCombatUpgradeLevel("passive_hp_regen");
+    const defenceLevel = getCombatUpgradeLevel("base_defence_bonus");
+    const speedLevel = getCombatUpgradeLevel("attack_speed");
+
+    return {
+      minHitBonus: Math.max(0, Math.floor(minHitLevel * COMBAT_UPGRADE_DEFS.min_hit.effectPerLevel)),
+      maxHitBonus: Math.max(0, Math.floor(maxHitLevel * COMBAT_UPGRADE_DEFS.max_hit.effectPerLevel)),
+      passiveRegenLevel: Math.max(0, regenLevel),
+      baseDefenceBonus: Math.max(0, Math.floor(defenceLevel * COMBAT_UPGRADE_DEFS.base_defence_bonus.effectPerLevel)),
+      attackSpeedMultiplier: clamp(speedLevel * COMBAT_UPGRADE_DEFS.attack_speed.effectPerLevel, 0, 0.75)
+    };
+  }
+
+  function getCombatUpgradeShopRows() {
+    ensureCombatUpgradeState();
+    return Object.values(COMBAT_UPGRADE_DEFS).map((def) => {
+      const level = getCombatUpgradeLevel(def.key);
+      const chance = getUpgradeSuccessChance(def, level);
+      const cost = getUpgradeCost(def, level);
+      const effectValue = def.effectUnit === "percent"
+        ? Math.round(level * def.effectPerLevel * 1000) / 10
+        : Math.round(level * def.effectPerLevel);
+      return {
+        key: def.key,
+        label: def.label,
+        description: def.description,
+        level,
+        cost,
+        chance,
+        maxLevel: def.maxLevel,
+        effectValue,
+        effectUnit: def.effectUnit
+      };
+    });
+  }
+
+  function purchaseCombatUpgrade(key) {
+    if (!window.Player) return { ok: false, message: "No active player." };
+    ensureCombatUpgradeState();
+    const def = COMBAT_UPGRADE_DEFS[key];
+    if (!def) return { ok: false, message: "Unknown upgrade." };
+
+    const level = getCombatUpgradeLevel(key);
+    if (level >= def.maxLevel) {
+      return { ok: false, message: `${def.label} is already maxed.` };
+    }
+
+    const cost = getUpgradeCost(def, level);
+    const chance = getUpgradeSuccessChance(def, level);
+    if (getInventoryCoins() < cost) {
+      return { ok: false, message: `You need ${formatNum(cost)} gp for ${def.label}.` };
+    }
+
+    if (!removeInventoryCoins(cost)) {
+      return { ok: false, message: "Could not spend coins for this upgrade." };
+    }
+
+    const success = Math.random() <= chance;
+    if (success) {
+      combatState.upgrades[key] = level + 1;
+    }
+
+    RSGame.Game?.saveNow?.();
+
+    if (success) {
+      return {
+        ok: true,
+        success: true,
+        key,
+        level: combatState.upgrades[key],
+        message: `${def.label} upgraded to level ${combatState.upgrades[key]}!`
+      };
+    }
+
+    return {
+      ok: true,
+      success: false,
+      key,
+      level,
+      message: `${def.label} upgrade failed (${Math.round(chance * 100)}% chance).`
+    };
+  }
+
+  function applyPassiveCombatRegen() {
+    if (!combatState) return;
+    const effects = getCombatUpgradeEffects();
+    if (effects.passiveRegenLevel <= 0) return;
+
+    const maxHp = getMaxHp();
+    if ((Number(combatState.currentHp) || 0) >= maxHp) return;
+
+    const chance = clamp(0.04 + (effects.passiveRegenLevel * 0.012), 0.04, 0.45);
+    if (Math.random() > chance) return;
+
+    const heal = Math.max(1, Math.floor(1 + effects.passiveRegenLevel / 8));
+    combatState.currentHp = Math.min(maxHp, (Number(combatState.currentHp) || 0) + heal);
+    addLog("Your passive regeneration restores " + heal + " HP.");
   }
 
   function getInventoryItem(id, noted = false) {
@@ -1047,6 +1243,11 @@ window.RSGame = window.RSGame || {};
       combatState.slayer.currentTask.remaining = Math.max(0, Number(combatState.slayer.currentTask.remaining) || 0);
     }
     if (!combatState.staking) combatState.staking = { wins: 0, losses: 0, history: [], offer: null };
+    if (!combatState.upgrades || typeof combatState.upgrades !== "object") combatState.upgrades = {};
+    Object.keys(COMBAT_UPGRADE_DEFS).forEach((key) => {
+      const level = Number(combatState.upgrades[key]);
+      combatState.upgrades[key] = Number.isFinite(level) ? Math.max(0, Math.floor(level)) : 0;
+    });
     window.Player.combat = combatState;
   }
 
@@ -1514,8 +1715,10 @@ window.RSGame = window.RSGame || {};
     if (!combatState) return;
     const monster = getSelectedMonster();
     const scale  = RSGame.Game?.getTimeScale?.() || 1;
+    const upgradeEffects = getCombatUpgradeEffects();
 
     autoEatBestFood();
+    applyPassiveCombatRegen();
 
     // Player hits monster
     const attackLvl   = getAttackLevel();
@@ -1531,7 +1734,7 @@ window.RSGame = window.RSGame || {};
       gearBonuses.defence_stab +
       gearBonuses.defence_slash +
       gearBonuses.defence_crush
-    ) / 3;
+    ) / 3 + upgradeEffects.baseDefenceBonus;
 
     // FURTHER NERF: Reduce player accuracy and damage scaling by ~10% more
     const playerAccuracy = (attackLvl * 2.7) + (attackBonus * 1.35) + Math.floor(strengthLvl * 0.54);
@@ -1543,9 +1746,10 @@ window.RSGame = window.RSGame || {};
       // FURTHER NERF: Reduce max damage from stats and gear by ~10% more
       const maxDmg = Math.max(
         2,
-        Math.floor((strengthLvl * 0.99) + (attackLvl * 0.495) + (gearBonuses.melee_strength * 0.2025) + (attackBonus * 0.1125))
+        Math.floor((strengthLvl * 0.99) + (attackLvl * 0.495) + (gearBonuses.melee_strength * 0.2025) + (attackBonus * 0.1125)) + upgradeEffects.maxHitBonus
       );
-      playerDmg = rand(1, maxDmg); // never 0 on hit
+      const minDmg = Math.min(maxDmg, Math.max(1, 1 + upgradeEffects.minHitBonus));
+      playerDmg = rand(minDmg, maxDmg); // never 0 on hit
     }
 
     combatState.monsterHp = Math.max(0, combatState.monsterHp - playerDmg);
@@ -1594,7 +1798,8 @@ window.RSGame = window.RSGame || {};
 
     refreshCombatHpBars();
 
-    const delay = Math.max(1, Math.round(2400 / scale));
+    const speedMult = 1 + upgradeEffects.attackSpeedMultiplier;
+    const delay = Math.max(1, Math.round(2400 / (scale * speedMult)));
     fightTimer = setTimeout(fightTick, delay);
   }
 
@@ -1604,7 +1809,9 @@ window.RSGame = window.RSGame || {};
     if (combatState.currentHp <= 0) combatState.currentHp = getMaxHp();
     combatState.monsterHp = getSelectedMonster().hp;
     refreshCombatHpBars();
-    const delay = Math.max(1, Math.round(2400 / (RSGame.Game?.getTimeScale?.() || 1)));
+    const scale = RSGame.Game?.getTimeScale?.() || 1;
+    const speedMult = 1 + getCombatUpgradeEffects().attackSpeedMultiplier;
+    const delay = Math.max(1, Math.round(2400 / (scale * speedMult)));
     fightTimer = setTimeout(fightTick, delay);
   }
 
@@ -2800,7 +3007,11 @@ window.RSGame = window.RSGame || {};
     ...(RSGame.Combat || {}),
     getMonsterById,
     simulateBossKillsToBank,
-    offerInventorySlotToDuel
+    offerInventorySlotToDuel,
+    getUpgradeDefinitions: () => ({ ...COMBAT_UPGRADE_DEFS }),
+    getUpgradeShopRows: () => getCombatUpgradeShopRows(),
+    getUpgradeEffects: () => ({ ...getCombatUpgradeEffects() }),
+    purchaseUpgrade: (key) => purchaseCombatUpgrade(String(key || ""))
   };
 
   RSGame.Game.registerMod({

@@ -193,6 +193,7 @@ window.RSGame = window.RSGame || {};
   ];
 
   const MONSTERS = MONSTER_DEFS.concat(BOSS_DEFS).map(createMonster);
+  const BOSS_IDS = new Set(BOSS_DEFS.map((boss) => boss.id));
   const MONSTERS_BY_ID = Object.fromEntries(MONSTERS.map((monster) => [monster.id, monster]));
   const MONSTER_DROP_COMMON = {
     low: [
@@ -1243,6 +1244,31 @@ window.RSGame = window.RSGame || {};
       combatState.slayer.currentTask.remaining = Math.max(0, Number(combatState.slayer.currentTask.remaining) || 0);
     }
     if (!combatState.staking) combatState.staking = { wins: 0, losses: 0, history: [], offer: null };
+    if (!combatState.monsterKillCounts || typeof combatState.monsterKillCounts !== "object") combatState.monsterKillCounts = {};
+    Object.keys(combatState.monsterKillCounts).forEach((key) => {
+      const count = Number(combatState.monsterKillCounts[key]);
+      combatState.monsterKillCounts[key] = Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+    });
+    if (!combatState.autoKills || typeof combatState.autoKills !== "object") {
+      combatState.autoKills = {
+        active: false,
+        targetMonsterId: null,
+        requested: 0,
+        completed: 0,
+        toBank: true
+      };
+    }
+    combatState.autoKills.active = !!combatState.autoKills.active;
+    combatState.autoKills.targetMonsterId = combatState.autoKills.targetMonsterId || null;
+    combatState.autoKills.requested = Math.max(0, Math.floor(Number(combatState.autoKills.requested) || 0));
+    combatState.autoKills.completed = Math.max(0, Math.floor(Number(combatState.autoKills.completed) || 0));
+    combatState.autoKills.toBank = combatState.autoKills.toBank !== false;
+    if (!combatState.sectionOpen || typeof combatState.sectionOpen !== "object") {
+      combatState.sectionOpen = { bosses: true, slayer: true, monsters: true };
+    }
+    combatState.sectionOpen.bosses = combatState.sectionOpen.bosses !== false;
+    combatState.sectionOpen.slayer = combatState.sectionOpen.slayer !== false;
+    combatState.sectionOpen.monsters = combatState.sectionOpen.monsters !== false;
     if (!combatState.upgrades || typeof combatState.upgrades !== "object") combatState.upgrades = {};
     Object.keys(COMBAT_UPGRADE_DEFS).forEach((key) => {
       const level = Number(combatState.upgrades[key]);
@@ -1390,9 +1416,15 @@ window.RSGame = window.RSGame || {};
 
     const selectedMaster = SLAYER_MASTER_BY_ID[selectedMasterId] || SLAYER_MASTERS[0];
     const eligible = selectedMaster ? getSlayerEligibleMonsters(selectedMaster.name, window.Player) : [];
-    const summaryRows = eligible
+    const eligibleMonsters = eligible.filter((monster) => !isBossMonster(monster));
+    const slayerBosses = MONSTERS
+      .filter((monster) => isBossMonster(monster) && (Number(monster.slayerLevel) || 0) > 1);
+    const summaryRows = eligibleMonsters
       .slice(0, 8)
-      .map((monster) => `<div class="slayer-eligible-row"><span>${monster.taskName || monster.name}</span><span>Lvl ${monster.lvl} / Sly ${monster.slayerLevel || 1}</span></div>`)
+      .map((monster) => `<div class="slayer-eligible-row"><span>${monster.taskName || monster.name}</span><span>Lvl ${monster.lvl} / Sly ${monster.slayerLevel || 1} / KC ${formatNum(getMonsterKillCount(monster.id))}</span></div>`)
+      .join("");
+    const bossRows = slayerBosses
+      .map((monster) => `<div class="slayer-eligible-row"><span>${monster.name}${slayerLevel < (Number(monster.slayerLevel) || 1) ? ' 🔒' : ''}</span><span>Lvl ${monster.lvl} / Sly ${monster.slayerLevel || 1} / KC ${formatNum(getMonsterKillCount(monster.id))}</span></div>`)
       .join("");
 
     const wraps = Array.from(document.querySelectorAll(".slayer-panel-body"));
@@ -1413,6 +1445,10 @@ window.RSGame = window.RSGame || {};
         <div class="slayer-eligible-wrap">
           <div class="slayer-eligible-title">Eligible from ${selectedMaster?.name || "Selected master"}</div>
           <div class="slayer-eligible-list">${summaryRows || '<div class="slayer-eligible-empty">No eligible assignments yet.</div>'}</div>
+        </div>
+        <div class="slayer-eligible-wrap">
+          <div class="slayer-eligible-title">Slayer Bosses</div>
+          <div class="slayer-eligible-list">${bossRows || '<div class="slayer-eligible-empty">No Slayer bosses unlocked yet.</div>'}</div>
         </div>
       `;
 
@@ -1475,6 +1511,145 @@ window.RSGame = window.RSGame || {};
     }
   }
 
+  function isBossMonster(monster) {
+    return !!monster && BOSS_IDS.has(monster.id);
+  }
+
+  function isSlayerCategoryMonster(monster) {
+    if (!monster) return false;
+    return (Array.isArray(monster.slayerMasters) && monster.slayerMasters.length > 0)
+      || (Number(monster.slayerLevel) || 0) > 1;
+  }
+
+  function getMonsterKillCount(monsterId) {
+    if (!combatState) initCombatState();
+    return Math.max(0, Math.floor(Number(combatState?.monsterKillCounts?.[monsterId]) || 0));
+  }
+
+  function recordMonsterKill(monsterId) {
+    if (!combatState) initCombatState();
+    combatState.monsterKillCounts[monsterId] = getMonsterKillCount(monsterId) + 1;
+  }
+
+  function getAutoKillState() {
+    if (!combatState) initCombatState();
+    return combatState.autoKills;
+  }
+
+  function isAutoKillActive() {
+    const state = combatState?.autoKills;
+    return !!(state?.active && state.requested > state.completed);
+  }
+
+  function getAutoKillRemaining() {
+    const state = combatState?.autoKills;
+    if (!state) return 0;
+    return Math.max(0, state.requested - state.completed);
+  }
+
+  function refreshCombatControlState() {
+    const startBtn = document.getElementById("combat-start-btn");
+    if (startBtn) {
+      startBtn.textContent = fightTimer ? "Stop" : "Attack";
+      startBtn.classList.toggle("active", !!fightTimer);
+    }
+
+    const killXBtn = document.getElementById("combat-killx-btn");
+    if (killXBtn) {
+      killXBtn.textContent = isAutoKillActive() ? "Stop Kill X" : "Kill X";
+      killXBtn.classList.toggle("active", isAutoKillActive());
+    }
+
+    const autoStatus = document.getElementById("combat-auto-status");
+    if (autoStatus) {
+      const autoState = combatState?.autoKills;
+      if (isAutoKillActive() && autoState) {
+        const target = getMonsterById(autoState.targetMonsterId) || getSelectedMonster();
+        autoStatus.textContent = "Auto bank: " + target.name + " " + autoState.completed + "/" + autoState.requested + " (" + getAutoKillRemaining() + " left)";
+      } else {
+        autoStatus.textContent = "";
+      }
+    }
+  }
+
+  function cancelAutoKillRun(message, options = {}) {
+    if (!combatState?.autoKills) return;
+    const wasActive = isAutoKillActive();
+    combatState.autoKills.active = false;
+    combatState.autoKills.targetMonsterId = null;
+    combatState.autoKills.requested = 0;
+    combatState.autoKills.completed = 0;
+    combatState.autoKills.toBank = true;
+    if (wasActive && message && !options.silent) addLog(message);
+    refreshCombatControlState();
+    if (!options.skipSave) RSGame.Game?.saveNow?.();
+  }
+
+  function startAutoKillRun(kills) {
+    if (!combatState) initCombatState();
+    const requested = Math.max(1, Math.floor(Number(kills) || 0));
+    const monster = getSelectedMonster();
+    combatState.autoKills = {
+      active: true,
+      targetMonsterId: monster.id,
+      requested,
+      completed: 0,
+      toBank: true
+    };
+    combatState.monsterHp = monster.hp;
+    combatState.currentHp = Math.max(1, Number(combatState.currentHp) || getMaxHp());
+    addLog("Kill X started: " + monster.name + " x" + requested + ". Loot will be sent to the bank.");
+    refreshCombatControlState();
+    startFight();
+    RSGame.Game?.saveNow?.();
+  }
+
+  function buildCombatSectionConfig() {
+    return [
+      {
+        key: "bosses",
+        label: "Bosses",
+        monsters: MONSTERS.filter((monster) => isBossMonster(monster))
+      },
+      {
+        key: "slayer",
+        label: "Slayer",
+        monsters: MONSTERS.filter((monster) => isSlayerCategoryMonster(monster))
+      },
+      {
+        key: "monsters",
+        label: "Monsters",
+        monsters: MONSTERS.filter((monster) => !isBossMonster(monster) && !isSlayerCategoryMonster(monster))
+      }
+    ];
+  }
+
+  function selectCombatMonster(monsterId, container) {
+    const monster = getMonsterById(monsterId);
+    if (!monster) return;
+    if (!combatState) initCombatState();
+
+    const autoState = getAutoKillState();
+    if (autoState.active && autoState.targetMonsterId !== monsterId) {
+      cancelAutoKillRun("Kill X cancelled after changing target monster.", { skipSave: true });
+    }
+
+    combatState.selectedMonster = monster.id;
+    combatState.monsterHp = monster.hp;
+
+    const nameEl = document.getElementById("combat-monster-name");
+    const iconEl = document.getElementById("combat-monster-icon");
+    if (nameEl) nameEl.textContent = monster.name;
+    if (iconEl) {
+      iconEl.src = monster.icon;
+      iconEl.alt = monster.name;
+    }
+
+    if (container) buildMonsterList(container);
+    refreshCombatHpBars();
+    refreshCombatControlState();
+  }
+
   function refreshCombatHpBars() {
     const monster = getSelectedMonster();
     const maxHp = getMaxHp();
@@ -1493,22 +1668,51 @@ window.RSGame = window.RSGame || {};
 
     const killEl = document.getElementById("combat-kill-count");
     if (killEl) killEl.textContent = "Kills: " + (combatState.kills || 0) + "  Deaths: " + (combatState.deaths || 0);
+    refreshCombatControlState();
   }
 
-  function onMonsterKilled(monster) {
+  function onMonsterKilled(monster, options = {}) {
+    const lootToBank = !!options.toBank;
+    const player = options.player || window.Player;
     combatState.kills = (combatState.kills || 0) + 1;
+    recordMonsterKill(monster.id);
     onSlayerMonsterKilled(monster);
     const coins = rand(monster.coinMin, monster.coinMax);
     if (coins > 0) {
-      addInventoryCoins(coins, "combat");
-      addLog("You defeated " + monster.name + " and looted " + coins + " coins.");
+      if (lootToBank) {
+        addDropToBank(player, {
+          id: "coins",
+          name: "Coins",
+          icon: "Coins_10000.png",
+          category: "Combat Drops"
+        }, coins);
+        addLog("You defeated " + monster.name + " and banked " + coins + " coins.");
+      } else {
+        addInventoryCoins(coins, "combat");
+        addLog("You defeated " + monster.name + " and looted " + coins + " coins.");
+      }
     } else {
       addLog("You defeated " + monster.name + ".");
     }
 
-    const drops = rollMonsterDrops(monster);
+    const drops = rollMonsterDrops(monster, { toBank: lootToBank, player });
     if (drops.length) {
-      addLog("Drops: " + drops.join(", ") + ".");
+      addLog((lootToBank ? "Banked drops: " : "Drops: ") + drops.join(", ") + ".");
+    }
+
+    if (lootToBank) RSGame.Bank?.refresh?.();
+
+    const monsterList = document.getElementById("combat-monster-list");
+    if (monsterList) buildMonsterList(monsterList);
+    renderSlayerPanel();
+
+    if (isAutoKillActive() && combatState.autoKills.targetMonsterId === monster.id) {
+      combatState.autoKills.completed += 1;
+      if (combatState.autoKills.completed >= combatState.autoKills.requested) {
+        addLog("Kill X complete: " + monster.name + " x" + combatState.autoKills.requested + ".");
+        cancelAutoKillRun("", { silent: true, skipSave: true });
+        stopFight();
+      }
     }
 
     RSGame.Game?.saveNow?.();
@@ -1568,9 +1772,16 @@ window.RSGame = window.RSGame || {};
     return [];
   }
 
-  function rollMonsterDrops(monster) {
+  function rollMonsterDrops(monster, options = {}) {
     const rewards = [];
     if (!monster) return rewards;
+    const player = options.player || window.Player;
+    const lootToBank = !!options.toBank;
+
+    function grantDrop(drop, qty) {
+      if (lootToBank) return addDropToBank(player, drop, qty);
+      return addDropToInventory(drop, qty);
+    }
 
     const tier = getDropTier(monster);
     const pool = (MONSTER_DROP_COMMON[tier] || MONSTER_DROP_COMMON.low).concat(getMonsterThemePool(monster));
@@ -1580,7 +1791,7 @@ window.RSGame = window.RSGame || {};
       const picked = weightedPick(pool);
       if (!picked) continue;
       const qty = rand(picked.qtyMin || 1, picked.qtyMax || 1);
-      if (addDropToInventory(picked, qty)) {
+      if (grantDrop(picked, qty)) {
         rewards.push((qty > 1 ? qty + "x " : "") + picked.name);
       }
     }
@@ -1593,7 +1804,7 @@ window.RSGame = window.RSGame || {};
       }
       if (Math.random() < uniqueChance) {
         const unique = weightedPick(uniques);
-        if (unique && addDropToInventory(unique, 1)) {
+        if (unique && grantDrop(unique, 1)) {
           rewards.push("UNIQUE: " + unique.name);
         }
       }
@@ -1605,7 +1816,7 @@ window.RSGame = window.RSGame || {};
     }
     if (Math.random() < globalRareChance) {
       const rare = weightedPick(GLOBAL_RARE_DROPS);
-      if (rare && addDropToInventory(rare, 1)) {
+      if (rare && grantDrop(rare, 1)) {
         rewards.push("RARE: " + rare.name);
       }
     }
@@ -1705,10 +1916,14 @@ window.RSGame = window.RSGame || {};
   function onPlayerDied() {
     combatState.deaths = (combatState.deaths || 0) + 1;
     combatState.currentHp = getMaxHp();
+    combatState.monsterHp = getSelectedMonster().hp;
     addLog("You have been defeated and respawned at Lumbridge.");
     stopFight();
-    const startBtn = document.getElementById("combat-start-btn");
-    if (startBtn) { startBtn.textContent = "Attack"; startBtn.classList.remove("active"); }
+    if (isAutoKillActive()) {
+      startFight();
+      return;
+    }
+    refreshCombatControlState();
   }
 
   function fightTick() {
@@ -1772,7 +1987,11 @@ window.RSGame = window.RSGame || {};
     RSGame.UI?.renderSkills?.(window.Player);
 
     if (combatState.monsterHp <= 0) {
-      onMonsterKilled(monster);
+      const autoState = getAutoKillState();
+      onMonsterKilled(monster, {
+        toBank: !!(autoState.active && autoState.targetMonsterId === monster.id && autoState.toBank),
+        player: window.Player
+      });
     } else {
       // Monster hits player
 
@@ -1807,7 +2026,7 @@ window.RSGame = window.RSGame || {};
     if (fightTimer) return;
     initCombatState();
     if (combatState.currentHp <= 0) combatState.currentHp = getMaxHp();
-    combatState.monsterHp = getSelectedMonster().hp;
+    if ((Number(combatState.monsterHp) || 0) <= 0) combatState.monsterHp = getSelectedMonster().hp;
     refreshCombatHpBars();
     const scale = RSGame.Game?.getTimeScale?.() || 1;
     const speedMult = 1 + getCombatUpgradeEffects().attackSpeedMultiplier;
@@ -1817,6 +2036,7 @@ window.RSGame = window.RSGame || {};
 
   function stopFight() {
     if (fightTimer) { clearTimeout(fightTimer); fightTimer = null; }
+    refreshCombatControlState();
   }
 
   /* ==========================================================
@@ -1871,7 +2091,11 @@ window.RSGame = window.RSGame || {};
 
         <div class="combat-actions-row">
           <button id="combat-start-btn" class="combat-action-btn">Attack</button>
-          <div id="combat-kill-count" class="combat-kill-count">Kills: 0  Deaths: 0</div>
+          <button id="combat-killx-btn" class="combat-action-btn combat-killx-btn">Kill X</button>
+          <div class="combat-kill-meta">
+            <div id="combat-kill-count" class="combat-kill-count">Kills: 0  Deaths: 0</div>
+            <div id="combat-auto-status" class="combat-auto-status"></div>
+          </div>
         </div>
 
         <!-- Combat log -->
@@ -1901,15 +2125,30 @@ window.RSGame = window.RSGame || {};
     const startBtn = panel.querySelector("#combat-start-btn");
     startBtn.addEventListener("click", () => {
       if (fightTimer) {
+        if (isAutoKillActive()) cancelAutoKillRun("Kill X cancelled.", { skipSave: true });
         stopFight();
-        startBtn.textContent = "Attack";
-        startBtn.classList.remove("active");
       } else {
         initCombatState();
         startFight();
-        startBtn.textContent = "Stop";
-        startBtn.classList.add("active");
       }
+      refreshCombatControlState();
+    });
+
+    const killXBtn = panel.querySelector("#combat-killx-btn");
+    killXBtn.addEventListener("click", () => {
+      if (isAutoKillActive()) {
+        cancelAutoKillRun("Kill X cancelled.");
+        stopFight();
+        return;
+      }
+      const answer = window.prompt("Kill how many " + getSelectedMonster().name + "?", "10");
+      if (answer == null) return;
+      const count = Math.max(0, Math.floor(Number(answer) || 0));
+      if (!count) {
+        addLog("Kill X needs a number greater than 0.");
+        return;
+      }
+      startAutoKillRun(count);
     });
 
     // Listen for speed changes
@@ -1922,6 +2161,7 @@ window.RSGame = window.RSGame || {};
       const kEl = panel.querySelector("#combat-kill-count");
       if (kEl) kEl.textContent = "Kills: " + (combatState.kills || 0) + "  Deaths: " + (combatState.deaths || 0);
     }
+    refreshCombatControlState();
   }
 
   function buildSlayerPanel(main) {
@@ -1941,35 +2181,47 @@ window.RSGame = window.RSGame || {};
     if (!container) return;
     container.innerHTML = "";
     const slayerLvl = Math.max(1, Number(window.Player?.skills?.Slayer?.level) || 1);
-    MONSTERS.forEach(m => {
-      // Only lock for Slayer if slayerLevel is defined and > 1
-      const hasSlayerReq = typeof m.slayerLevel === 'number' && m.slayerLevel > 1;
-      const slayerLocked = hasSlayerReq && Number(slayerLvl) < Number(m.slayerLevel);
-      const locked = slayerLocked;
-      const selected = (combatState?.selectedMonster || "chicken") === m.id;
-      const card = document.createElement("div");
-      card.className = "combat-monster-card" + (selected ? " selected" : "") + (locked ? " locked" : "");
-      card.innerHTML = `
-        <img src="${m.icon}" alt="${m.name}" onerror="this.style.display='none'" />
-        <div class="cmc-name">${m.name}</div>
-        <div class="cmc-lvl">Lvl ${m.lvl}${hasSlayerReq ? ' / Sly ' + m.slayerLevel : ''}</div>
-        ${locked ? `<div class=\"cmc-locked\">🔒${slayerLocked ? ' Slayer ' + m.slayerLevel : ''}</div>` : ""}
-      `;
-      if (!locked) {
-        card.addEventListener("click", () => {
-          if (!combatState) initCombatState();
-          combatState.selectedMonster = m.id;
-          combatState.monsterHp = m.hp;
-          container.querySelectorAll(".combat-monster-card").forEach(c => c.classList.remove("selected"));
-          card.classList.add("selected");
-          const nameEl = document.getElementById("combat-monster-name");
-          const iconEl = document.getElementById("combat-monster-icon");
-          if (nameEl) nameEl.textContent = m.name;
-          if (iconEl) { iconEl.src = m.icon; iconEl.alt = m.name; }
-          refreshCombatHpBars();
+    buildCombatSectionConfig().forEach((section) => {
+      const wrap = document.createElement("div");
+      wrap.className = "combat-monster-section";
+
+      const toggle = document.createElement("button");
+      toggle.type = "button";
+      toggle.className = "combat-section-toggle";
+      toggle.setAttribute("aria-expanded", combatState?.sectionOpen?.[section.key] !== false ? "true" : "false");
+      toggle.innerHTML = `<span>${section.label}</span><span>${section.monsters.length} ${combatState?.sectionOpen?.[section.key] !== false ? "-" : "+"}</span>`;
+      toggle.addEventListener("click", () => {
+        if (!combatState) initCombatState();
+        combatState.sectionOpen[section.key] = !(combatState.sectionOpen[section.key] !== false);
+        buildMonsterList(container);
+      });
+      wrap.appendChild(toggle);
+
+      if (combatState?.sectionOpen?.[section.key] !== false) {
+        const grid = document.createElement("div");
+        grid.className = "combat-monster-grid";
+        section.monsters.forEach((m) => {
+          const hasSlayerReq = typeof m.slayerLevel === "number" && m.slayerLevel > 1;
+          const slayerLocked = hasSlayerReq && Number(slayerLvl) < Number(m.slayerLevel);
+          const selected = (combatState?.selectedMonster || "chicken") === m.id;
+          const card = document.createElement("div");
+          card.className = "combat-monster-card" + (selected ? " selected" : "") + (slayerLocked ? " locked" : "");
+          card.innerHTML = `
+            <img src="${m.icon}" alt="${m.name}" onerror="this.style.display='none'" />
+            <div class="cmc-name">${m.name}</div>
+            <div class="cmc-lvl">Lvl ${m.lvl}${hasSlayerReq ? " / Sly " + m.slayerLevel : ""}</div>
+            <div class="cmc-kc">KC ${formatNum(getMonsterKillCount(m.id))}</div>
+            ${slayerLocked ? `<div class=\"cmc-locked\">🔒 Slayer ${m.slayerLevel}</div>` : ""}
+          `;
+          if (!slayerLocked) {
+            card.addEventListener("click", () => selectCombatMonster(m.id, container));
+          }
+          grid.appendChild(card);
         });
+        wrap.appendChild(grid);
       }
-      container.appendChild(card);
+
+      container.appendChild(wrap);
     });
   }
 
